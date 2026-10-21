@@ -69,7 +69,7 @@ cp .env.example .env && chmod 600 .env
 ./scripts/test.sh                                    # backend pytest + dashboard type-check/build
 .venv/bin/python -m pytest -q                        # backend only
 ARGONA_TEST_DATABASE_URL=postgresql+asyncpg://user@host:5432/argona_test .venv/bin/python -m pytest -q   # also on PostgreSQL (DESTROYS that DB's schema)
-(cd frontend && PLAYWRIGHT_CHROMIUM_PATH=/path/to/chrome npx playwright test)   # browser E2E (boots its own SIM backend)
+E2E=1 ./scripts/test.sh                              # + browser E2E (boots its own SIM backends; needs Chromium)
 ```
 
 ### B4. Start

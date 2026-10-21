@@ -8,7 +8,7 @@ Date: 2026-10-21. This report records what was built, what was actually executed
 |---|---|
 | Backend installs and starts | Fresh `git clone` → `./scripts/install.sh` (31 s) → `./scripts/start.sh`. `/api/health` returned `ok`; `argona status` worked |
 | Database and migrations | Alembic 0001 → 0002 applied on SQLite and **PostgreSQL 16**. `alembic check` reports no drift. Upgrading a live soak DB preserved all rows |
-| Test suites | **94 backend tests pass on SQLite and on PostgreSQL**: 58 unit, 35 integration with mocked exchange APIs, 1 end-to-end paper lifecycle. **1 Playwright browser E2E passes**: the dashboard against a real backend, with controls checked against backend state |
+| Test suites | **94 backend tests pass on SQLite and on PostgreSQL**: 58 unit, 35 integration with mocked exchange APIs, 1 end-to-end paper lifecycle. **2 Playwright browser E2E tests pass**: the dashboard against a real backend, with controls checked against backend state, plus the token login gate and live stream on an authenticated server |
 | Frontend | `tsc -b` clean; `vite build` succeeds; desktop (1440 px) and mobile (390 px) screenshots show no console errors and no horizontal overflow |
 | Container | Image built (multi-stage, non-root `argona` user). Ran with token auth, healthcheck `healthy`, restart policy `unless-stopped`, named volume persistence across `docker stop/start`, graceful SIGTERM shutdown, migrations shipped in the package. The final code was verified inside the container runtime (see §4 for build-network caveats) |
 | Paper lifecycle | Automated: discovery → evidence → estimate → TESS approval → simulated fill → resolution → settlement, plus a full audit-chain check (`tests/e2e`). Live soak on the SIM venue: see §3 |
@@ -32,7 +32,18 @@ Date: 2026-10-21. This report records what was built, what was actually executed
 
 ## 3. SIM soak (wall-clock run on the simulated venue)
 
-SOAK_RESULTS_PLACEHOLDER
+A clean run of `argona serve` with `ARGONA_PROVIDERS=sim` and the scheduler on (scan every 15 s) ran from **01:42 to 02:04 UTC** on 2026-10-21, using real wall-clock time with no test hooks:
+
+| Metric | Result |
+|---|---|
+| Scheduler jobs | 9 registered, **0 failures**; agents: **0 errors** |
+| Orders | 8 submitted (paper), 8 filled (simulated), 0 rejected, 0 unknown |
+| Resolutions | 2 SIM markets resolved at 02:02 and were settled automatically by the next settlement run (02:03:34) |
+| Settlement correctness | NO ×320 (cost $211.68) → payout $320.00, **+$108.32**; YES ×179 (cost $102.73) → payout $0, **−$102.73** |
+| Accounting identity | starting capital + realized P&L = cash + open cost basis = **$10,005.59** (exact) |
+| Fees (simulated, Kalshi-style quadratic) | $27.97 |
+
+An earlier soak on the pre-fix build also exercised a restart with open positions. It exposed two defects, both fixed and covered by regression tests: SIM state not persisted across restarts, and an infinite profit factor breaking JSON. The two settled trades above are a sample of two on simulated data. They demonstrate correct mechanics only, and say **nothing** about profitability.
 
 ## 4. Known limitations
 

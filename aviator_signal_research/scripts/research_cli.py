@@ -153,6 +153,30 @@ def observe_cmd(args) -> None:
         raise SystemExit(2)
 
 
+def export_rounds(args) -> None:
+    """Export a source's cleaned rounds (incl. revealed seeds) to CSV for safekeeping / sharing."""
+    import csv
+
+    from app.models import Round
+
+    init_engine()
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with session_scope() as s:
+        sid = _source_id(s, args.source)
+        rows = s.scalars(select(Round).where(Round.source_id == sid).order_by(Round.sequence)).all()
+        with out.open("w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["sequence", "round_id", "timestamp", "multiplier", "verified", "server_seed", "client_seeds",
+                        "collected_at", "data_label"])
+            for r in rows:
+                w.writerow([r.sequence, r.round_id, r.round_timestamp.isoformat() if r.round_timestamp else "",
+                            f"{r.multiplier:.2f}", int(r.verified), r.server_seed or "", r.client_seeds or "",
+                            r.collected_at.isoformat() if r.collected_at else "",
+                            "public_observation:spribe_demo"])
+    print(f"exported {len(rows)} rounds ({sum(r.verified for r in rows)} verified) to {out}")
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -173,6 +197,10 @@ def main() -> None:
     b.add_argument("--stake", type=float, default=1.0)
     b.set_defaults(fn=do_backtest)
     sub.add_parser("demo-report").set_defaults(fn=demo_report)
+    x = sub.add_parser("export-rounds", help="export a source's rounds to CSV")
+    x.add_argument("--source", required=True)
+    x.add_argument("--out", required=True)
+    x.set_defaults(fn=export_rounds)
     c = sub.add_parser("collect-docs", help="collect official game documentation (robots.txt obeyed)")
     c.add_argument("urls", nargs="+")
     c.add_argument("--render", choices=["auto", "never", "always"], default="auto")

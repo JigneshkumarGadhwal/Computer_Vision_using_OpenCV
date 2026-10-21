@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ipaddress
+import re
 from html import escape as html_escape
 import os
 from contextlib import contextmanager
@@ -68,20 +69,43 @@ def browser_context(user_agent: str = USER_AGENT, headless: bool = True, target_
             browser.close()
 
 
+FRAME_TAG = "avr-frame"
+
+
 def rendered_html(page) -> str:
-    """One well-formed HTML document: the page body plus each iframe's body in a
-    ``<section data-frame=...>`` (games usually render inside an iframe).
-    Concatenating whole documents would make HTML parsers stop at the first one."""
+    """One well-formed HTML document: the page body plus each iframe's body inside an
+    ``<avr-frame data-frame-index=i>`` element (games often render inside an iframe).
+    Concatenating whole documents would make HTML parsers stop at the first one, and a
+    custom tag keeps XPaths into frames unambiguous (see :func:`locate`)."""
     title = html_escape(page.title() or "")
     parts = [f"<html><head><title>{title}</title></head><body>"]
     for i, frame in enumerate(page.frames):
         try:
-            body = frame.evaluate("() => document.body ? document.body.outerHTML : ''")
+            body = frame.evaluate("() => document.body ? document.body.innerHTML : ''")
         except Exception:  # detached frame / navigation race
-            continue
+            body = ""
         if i == 0:
             parts.append(body)
         else:
-            parts.append(f'<section data-frame="{html_escape(frame.url)}">{body}</section>')
+            parts.append(f'<{FRAME_TAG} data-frame-index="{i}" data-frame="{html_escape(frame.url)}">{body}</{FRAME_TAG}>')
     parts.append("</body></html>")
     return "\n".join(parts)
+
+
+_FRAME_PREFIX = re.compile(rf"^/html/body/{FRAME_TAG}(?:\[(\d+)\])?")
+
+
+def locate(page, xpath: str, html: str | None = None):
+    """Map an XPath into :func:`rendered_html` output back to (frame, xpath-in-frame)."""
+    m = _FRAME_PREFIX.match(xpath)
+    if not m:
+        return page.main_frame, xpath
+    nth = int(m.group(1) or 1)  # 1-based position among avr-frame elements
+    from lxml import html as lxml_html
+
+    root = lxml_html.fromstring(html or rendered_html(page))
+    wrappers = root.xpath(f"/html/body/{FRAME_TAG}")
+    idx = int(wrappers[nth - 1].get("data-frame-index")) if len(wrappers) >= nth else nth
+    frames = page.frames
+    frame = frames[idx] if idx < len(frames) else page.main_frame
+    return frame, "/html/body" + xpath[m.end():]

@@ -1,27 +1,68 @@
 """Fairness-mechanism audit using only PUBLIC, post-round metadata.
 
-What is (secondhand-)documented for Spribe's Aviator: a commit-reveal scheme
-in which a hash of the server seed is shown before the round, client seeds come
-from the first bettors, and the result is derived from a SHA-512 hash of the
-combined seeds. The exact multiplier formula and the RTP are NOT confirmed
-from primary documentation in this project, so:
+Spribe's in-game documentation (Aviator demo, "What is Provably Fair",
+collected 2026-10-21) states: the operator generates a server seed whose SHA-256
+hash is published before the round; when the round starts it is merged with the
+client seeds of the first 3 bettors, a SHA-512 hash is computed, "and from this
+hash - game result". The final step is not spelled out. It was reconstructed and
+verified exactly against 16 rounds' published fairness records (see
+:func:`spribe_aviator_result` and ``tests/data/spribe_fairness_samples.json``):
 
-* We verify only what is generic and checkable: whether a revealed server
-  seed matches its pre-round commitment (SHA-256 or SHA-512).
-* Deriving the multiplier from seeds requires a platform-specific function.
-  None is shipped by default; register one with :func:`register_derivation`
-  once you have verified it against the operator's documentation.
+    H      = SHA512(server_seed + client_seed_1 + client_seed_2 + client_seed_3)
+    h      = int(H[:13], 16)                    # first 52 bits
+    result = max(1.00, floor(97 * 2**52 / (2**52 - h)) / 100)
+
+With H uniformly distributed this gives P(X >= m) = 0.97 / m exactly, i.e. the
+reference distribution used in the analysis, with independent rounds.
+Verified for the demo server; an operator may configure a different RTP.
+
+We also check generic commitments: whether a revealed server seed matches a
+previously published hash (SHA-256 or SHA-512).
 
 Nothing here attempts to obtain future seeds or non-public server state.
 """
 from __future__ import annotations
 
 import hashlib
+import json
 from typing import Callable
 
 import pandas as pd
 
 _DERIVATIONS: dict[str, Callable[[str, str, str | None], float]] = {}
+_E52 = 2 ** 52
+
+
+def spribe_hash(server_seed: str, client_seeds: list[str]) -> str:
+    return hashlib.sha512((server_seed + "".join(client_seeds)).encode()).hexdigest()
+
+
+def spribe_aviator_result(hash_hex: str, rtp_percent: int = 97) -> float:
+    """Crash multiplier from the combined SHA-512 hex digest (integer arithmetic, no float rounding)."""
+    h = int(hash_hex[:13], 16)
+    return max(100, (rtp_percent * _E52) // (_E52 - h)) / 100
+
+
+def verify_spribe_record(server_seed: str, client_seeds: list[str], result: float,
+                         published_hash: str | None = None, rtp_percent: int = 97) -> dict:
+    """Re-derive a round from its revealed seeds and compare with the published values."""
+    digest = spribe_hash(server_seed, client_seeds)
+    computed = spribe_aviator_result(digest, rtp_percent)
+    out = {
+        "computed_hash_prefix": digest[:13],
+        "computed_result": computed,
+        "result_matches": abs(computed - float(result)) < 1e-9,
+        "hash_matches": None if published_hash is None else digest == published_hash.lower(),
+        "n_client_seeds": len(client_seeds),
+    }
+    out["verified"] = out["result_matches"] and out["hash_matches"] is not False
+    return out
+
+
+def _spribe_derivation(server_seed: str, client_seeds: str, nonce: str | None) -> float:
+    seeds = json.loads(client_seeds) if client_seeds and client_seeds.strip().startswith("[") else (
+        [x for x in (client_seeds or "").split("|") if x])
+    return spribe_aviator_result(spribe_hash(server_seed, seeds))
 
 
 def register_derivation(name: str, fn: Callable[[str, str, str | None], float]) -> None:
@@ -38,7 +79,20 @@ def commitment_matches(server_seed: str, server_seed_hash: str) -> str | None:
     return None
 
 
-def audit_fairness(rounds: pd.DataFrame, derivation: str | None = None) -> dict:
+register_derivation("spribe_aviator_v1", _spribe_derivation)
+
+
+def _status(has_commitments: bool, commitment_mismatches: int, derived: dict | None) -> str:
+    if derived and derived.get("mismatched"):
+        return "result_mismatches_found"
+    if commitment_mismatches:
+        return "commitment_mismatches_found"
+    if derived and derived.get("matched"):
+        return "results_reproduced_from_revealed_seeds" + ("_and_commitments_consistent" if has_commitments else "")
+    return "commitments_consistent" if has_commitments else "no_fairness_metadata"
+
+
+def audit_fairness(rounds: pd.DataFrame, derivation: str | None = "spribe_aviator_v1") -> dict:
     n = len(rounds)
     has_hash = rounds["server_seed_hash"].notna() if "server_seed_hash" in rounds else pd.Series(False, index=rounds.index)
     has_seed = rounds["server_seed"].notna() if "server_seed" in rounds else pd.Series(False, index=rounds.index)
@@ -55,7 +109,7 @@ def audit_fairness(rounds: pd.DataFrame, derivation: str | None = None) -> dict:
             if len(mismatched_ids) < 20:
                 mismatched_ids.append(r["round_id"])
     derived = None
-    if derivation:
+    if derivation and has_seed.any():
         fn = _DERIVATIONS.get(derivation)
         if fn is None:
             derived = {"error": f"no derivation registered under '{derivation}'"}
@@ -80,13 +134,10 @@ def audit_fairness(rounds: pd.DataFrame, derivation: str | None = None) -> dict:
         "hash_algorithms": algos,
         "multiplier_derivation": derived,
         "registered_derivations": sorted(_DERIVATIONS),
-        "status": (
-            "no_fairness_metadata"
-            if not both.any()
-            else ("commitments_consistent" if mismatched == 0 else "commitment_mismatches_found")
-        ),
+        "status": _status(both.any(), mismatched, derived),
         "notes": [
-            "Documentation of the generation mechanism is platform-specific and was not verified from primary sources.",
+            "Spribe Aviator derivation verified on published demo fairness records (see module docstring); "
+            "other operators/platforms may differ.",
             "Matching commitments show the operator did not change the server seed after committing; "
             "they do not prove the RNG or payout formula is implemented as advertised.",
             "Independence of rounds is an assumption to be tested statistically (see EDA dependence tests).",

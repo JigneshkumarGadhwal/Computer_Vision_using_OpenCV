@@ -28,22 +28,48 @@ Threshold prediction and exact-multiplier estimation are evaluated separately an
   but **not** filled; lag features treat the stored sequence as contiguous.
 * Synthetic and real data can never share a source.
 
-## 3. Generation mechanism (what is and is not known)
+## 3. Generation mechanism (verified for Spribe's Aviator demo)
 
-Secondhand descriptions of Spribe's Aviator describe a commit–reveal "provably fair" scheme: a hash of the server
-seed is published before the round, client seeds come from the first bettors, and the multiplier is derived from a
-SHA-512 hash of the combined seeds. Spribe's official game page states an **RTP of 97%** (collected 2026-10-21 with
-`collect-docs`); the exact seed→multiplier formula is **not published there** and remains unverified. Other sites using the "Aviator" name may run different software.
+Primary sources (collected 2026-10-21, see `docs/COLLECTION.md`):
 
-Consequently:
+* spribe.co/games/aviator: *"Return to Player (RTP) 97%"*.
+* In-game "What is Provably Fair": the operator generates a server seed; its SHA-256 hash is published before the
+  round; at round start it is merged with the client seeds of the first 3 bettors, a SHA-512 hash is computed,
+  "and from this hash — game result".
+* In-game round detail / `roundFairnessResponse` messages: revealed server seed, client seeds, combined hash, the
+  13-hex prefix and its decimal value, and the result.
 
-* The reference distribution `P(X ≥ m) = RTP / m` (default RTP 0.97, the officially stated RTP) is used only as a *reference hypothesis* for
-  goodness-of-fit and as one comparison baseline. It is configurable (`AVR_REFERENCE_RTP`).
-* The fairness audit checks only what is generic: whether a revealed server seed hashes (SHA-256/512) to its
-  pre-round commitment. A platform-specific seed→multiplier derivation can be registered once verified
-  (`app/analysis/fairness.py::register_derivation`); none ships by default.
-* If the documented mechanism is implemented correctly, rounds are independent and **no** feature of past rounds
-  can predict the next one. The project tests this empirically instead of assuming it.
+The last step is not spelled out in the documentation. It was reconstructed and **verified exactly on 16 published
+demo rounds** (`backend/tests/data/spribe_fairness_samples.json`, test `test_spribe_derivation_reproduces_real_published_rounds`):
+
+```
+H      = SHA512(server_seed + client_seed_1 + client_seed_2 + client_seed_3)     (16/16)
+h      = int(H[:13], 16)                                  # first 52 bits          (16/16)
+result = max(1.00, floor(97 · 2^52 / (2^52 − h)) / 100)                            (16/16)
+```
+
+(The published intermediate `number` equals `99 · 2^52/(2^52 − h)`; the result uses 97, matching the stated RTP.)
+
+**Consequence.** If SHA-512 output is indistinguishable from uniform and the server seed is unknown before the
+round, then `u = h/2^52 ~ U(0,1)` independently per round and
+
+```
+P(X ≥ m) = P(97/(1−u) ≥ 100·m) = 0.97 / m      for m ≥ 1.00  (3% of rounds are 1.00x)
+```
+
+which is exactly the reference distribution used throughout. Past rounds carry no information about the next one;
+predicting a round would require the server seed, i.e. inverting its published SHA-256 commitment. This is why the
+expected outcome of the walk-forward evaluation on real data is NO DEMONSTRATED EDGE, and why the evaluation is
+still worth running: it tests empirically whether the implementation behaves as documented.
+
+Caveats: verified on the **demo** server only (operators may configure a different RTP); in rounds with fewer than
+3 early bettors the client seeds are fewer or absent (one sampled round had none), so the server seed alone decides
+the result — still fixed in advance by its published hash, but commitment checks require recording the pre-round
+hash, which the current collector does not yet do.
+
+The fairness audit (`app/analysis/fairness.py`) re-derives every stored round that has revealed seeds
+(`spribe_aviator_v1`) and reports mismatches; generic SHA-256/SHA-512 commitment checks run when a pre-round hash is
+stored.
 
 ## 4. Features (all strictly causal)
 

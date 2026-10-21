@@ -146,7 +146,8 @@ def observe_cmd(args) -> None:
     res = observe(args.url, args.source, minutes=args.minutes, poll_s=args.poll, max_rounds=args.max_rounds,
                   selector=args.selector, newest_first=not args.oldest_first,
                   policy=AccessPolicy(min_interval_s=args.interval),
-                  raw_dir=ROOT / "data" / "raw" / "observations", log_websockets=not args.no_ws)
+                  raw_dir=ROOT / "data" / "raw" / "observations", decode_ws=not args.no_ws_decode,
+                  log_raw_frames=args.log_raw_frames, verify_fairness=args.verify_fairness)
     print(json.dumps(res.to_dict(), indent=2))
     if res.rounds_ingested == 0 and res.errors:
         raise SystemExit(2)
@@ -192,7 +193,13 @@ def main() -> None:
     o.add_argument("--selector", default=None, help="CSS for history items if auto-detection picks the wrong list")
     o.add_argument("--oldest-first", action="store_true", help="history bar lists the oldest round first")
     o.add_argument("--interval", type=float, default=5.0)
-    o.add_argument("--no-ws", action="store_true", help="do not log WebSocket frames")
+    o.add_argument("--no-ws-decode", action="store_true",
+                   help="ignore the game's WebSocket messages and read only the history bar")
+    o.add_argument("--verify-fairness", action="store_true",
+                   help="open each round's provably-fair record in the game (one request per round) and "
+                        "re-derive the result from the revealed seeds; verified rounds are marked verified")
+    o.add_argument("--log-raw-frames", action="store_true",
+                   help="also store raw WebSocket frames (contain other players' names/bets; off by default)")
     o.set_defaults(fn=observe_cmd)
     args = p.parse_args()
     args.fn(args)

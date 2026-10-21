@@ -44,35 +44,44 @@ python scripts/research_cli.py collect-docs https://spribe.co/games/aviator
 ## 2. Publicly observable rounds (`observe`)
 
 ```bash
-python scripts/research_cli.py observe <public game page URL> --source spribe-demo-observed --minutes 60
-# or, with the documented Spribe demo URL (the site asks you to confirm you are of legal age):
-python scripts/research_cli.py observe --profile spribe --confirm-legal-age --source spribe-demo-observed --minutes 60
+python scripts/research_cli.py observe --profile spribe --confirm-legal-age --verify-fairness \
+       --source spribe-demo-observed --minutes 60
 ```
 
-* Checks robots.txt, opens the page once, then reads the **already-loaded DOM, including iframes**, every
-  `--poll` seconds. No extra requests are sent to the server.
-* Finds the recent-results bar automatically: the parent containing the most elements whose full text is a
-  multiplier (`2.31x`, `<span>2.31</span>x`). Other players' cash-out tables and balances are ignored. The bar's
-  XPath is pinned. If it disappears, detection re-runs and a `selector_relocated` event is logged.
-  `--selector` overrides with a CSS selector.
-* `new_since` aligns each snapshot with the previous one (≥3 overlapping values) and emits only the new rounds,
-  oldest first. If they cannot be aligned, a `gap` is logged and nothing is guessed.
-* Each new round is written to `data/raw/observations/*.jsonl` (raw) and ingested through the normal path as
-  source kind `public_observation`: `verified=False`, timestamp = observation time, no official round id.
-  WebSocket frames are logged raw (text ≤2 KB, binary ≤1 KB as base64; max 20,000 frames) for later protocol
-  analysis; they are **not decoded**.
-* Stops on: time / round budget, CAPTCHA/anti-bot page, robots.txt disallow, network refusal, repeated page
-  failures, or no new round for 5 minutes.
-* Rounds visible at page load are **not** ingested (their times are unknown); counting starts with the first new round.
+Two independent channels are read from the one open page; no extra requests are made except the optional
+per-round fairness lookup.
+
+1. **Game messages (primary).** The game talks SmartFoxServer 2X over its own WebSocket. `sfs2x.py` decodes the
+   binary SFSObject format (no third-party SDK). Only round-level messages are used: `changeState` (betting /
+   flight, official round id, server time) and `roundChartInfo` (official round id + crash multiplier).
+   Round time = server time at which the flight started.
+2. **History bar (cross-check / fallback).** Auto-detected as the parent with the most multiplier-text children
+   (`<div>1.50x</div>`, `<span>2.31</span>x`), XPath-pinned, re-located if the markup changes; snapshots are aligned
+   with `new_since` (gaps logged, never guessed).
+
+`Reconciler` makes the WebSocket authoritative when decodable results arrive (else falls back to the history bar)
+and reports `confirmed / ws_only / dom_only`. Betting phases without a result are logged as `round_without_result`
+and are **not** recorded as rounds.
+
+**`--verify-fairness`** opens each round's provably-fair record in the game (as a player can) after the next
+betting phase begins — the game ignores clicks right after a crash — reads the `roundFairnessResponse`, re-derives
+the result with the verified formula (METHODOLOGY §3) and stores the revealed server seed and client seeds on the
+round; the round is marked `verified=True` only if hash and result match.
+
+**Privacy.** Game messages include other players' usernames, avatars and bets. Raw frames are **not stored**
+(opt-in `--log-raw-frames` for protocol debugging); only round-level fields (ids, states, multipliers, seeds) are
+written to `data/raw/observations/*.jsonl`. Tests assert that player names never reach the log.
+
+Stops on: time / round budget, CAPTCHA/anti-bot page, robots.txt disallow (start host *and* redirect target),
+network refusal, repeated page failures, or no new round for 5 minutes.
 
 ### Limitations of observed data
 
-* A vendor's **demo** page may use a separate server and may not reflect real-money rounds at any operator.
-  Treat it as its own data source; never mix it with an operator export.
-* Without round ids, a missed poll window longer than the bar length causes a `gap` (logged, not filled).
-* Repeating identical values in the bar can, in rare cases, be aligned ambiguously; ≥3 overlapping values are required.
-* Terms of use: check the site's terms yourself before running a long observation; robots.txt compliance is
-  necessary but not sufficient.
+* The **demo** server may differ from real-money operators (different RTP configuration, different traffic).
+  Keep it as its own source; never mix it with an operator export.
+* Official round ids are **not consecutive** (the counter is shared), so id gaps are not missing rounds.
+* Pre-round server-seed hashes ("next server seed SHA256") are not yet recorded, so commitment checks are not run.
+* Terms of use: none were found on spribe.co beyond privacy/cookie policies; check before long observations.
 
 ## Verified in this environment (2026-10-21)
 
@@ -86,7 +95,12 @@ python scripts/research_cli.py observe --profile spribe --confirm-legal-age --so
 | **Real target `https://spribe.co/games/aviator`** (after `spribe.co` was allowed) | **collected** (rendered; Angular app). Official text: *"Return to Player (RTP) 97%"*, game type *Mini Game*, devices *Desktop, Tablet, Mobile*. No provably-fair formula or round history is published on the page. `robots.txt` is not a real robots file (the app returns its HTML for every path) → no crawl rules |
 | Demo game URL | found in spribe.co's public JS bundle: `https://demo.spribe.io/launch/aviator?currency=USD&lang=EN&return_url=https://spribe.co/games`, opened by script after an **"I'm over 18"** confirmation → stored in `app/collectors/profiles.py`; `observe --profile spribe` requires `--confirm-legal-age` |
 | Demo launcher `demo.spribe.io` (after `spribe.io` was allowed) | `/launch/aviator` answers **302** to `https://aviator-demo.spribegaming.com/?currency=USD&operator=demo&jurisdiction=CW&...&token=…` (a fresh demo session). Its `robots.txt` returns a CloudFront **403** "Request blocked" → per RFC 9309 no rules |
-| **Game host `aviator-demo.spribegaming.com`** | **not reachable**: `spribegaming.com` is refused by the network policy (`network_blocked`) |
+| Game host `aviator-demo.spribegaming.com` (after `spribegaming.com` was allowed) | robots.txt is the app's HTML (no rules); page has `<meta name="robots" content="noindex, nofollow">` (indexing directive; nothing is indexed or followed). Game data over `wss://app-demo.spribegaming.com/BlueBox/websocket` (SmartFoxServer 2X) |
+| In-game documentation | Game rules, "What is Provably Fair", Game limits (demo: bet 0.10–100 USD, max win 10,000 USD) collected; text quoted in METHODOLOGY §3 |
+| Seed → multiplier formula | reconstructed and reproduced **16/16** published rounds (hash, 13-hex prefix, result) |
+| Live observation, 5 min | 13 rounds, history bar confirmed **13/13**, 0 decode errors, 0 gaps, 1 betting phase without a result |
+| Live observation with `--verify-fairness`, 6 min | **17 rounds, 17/17 re-derived from revealed seeds and matching**, history bar confirmed 17/17 |
+| Bugs found on the live game and fixed | bubble added after the crash animation; history clicks ignored right after a crash (now waits for the next betting phase); both reproduced in the fixture tests |
 
 Fixes made after running against the real site: label/value pairs (`<p>Return to Player (RTP)</p><h5>97%</h5>`)
 are now paired; buttons that open links by script are recorded.

@@ -5,9 +5,10 @@
 * **No real Aviator data ships with the project.** All numbers in the bundled report come from clearly labelled
   synthetic data. Whether a real operator's rounds contain predictive information is unknown until you import an
   authorised export and run the evaluation.
-* **The generation mechanism is not verified.** The commit–reveal / SHA-512 description is secondhand
-  (affiliate/explainer sites). The **97% RTP is confirmed** by Spribe's official page
-  (https://spribe.co/games/aviator, collected 2026-10-21), but the page does not publish the multiplier formula. The reference distribution `P(X≥m)=RTP/m` is a hypothesis, not a fact,
+* **The generation mechanism is verified for the demo server only.** The 97% RTP is stated on spribe.co, and the
+  seed→multiplier formula was reconstructed and reproduced exactly on 16 published demo rounds (METHODOLOGY §3).
+  Real-money operators may configure a different RTP, and pre-round server-seed commitments are not yet recorded,
+  so "the server seed was fixed before the round" is documented but not independently checked here. The reference distribution `P(X≥m)=RTP/m` is a hypothesis, not a fact,
   and other "Aviator"-branded games may differ.
 * **A statistical anomaly is not an edge.** Dependence tests in the History page can be significant without any
   model improving out-of-sample probabilities enough to matter, and a better Brier score need not survive the
@@ -38,9 +39,9 @@
 | Real historical data | **missing** | An authorised export (CSV/JSON) from the operator, or records you collected where permitted |
 | Live feed | `POST /api/live/{source}/rounds`, `FeedAdapter`, and the `observe` collector for public pages | The demo host `demo.spribe.io` (domain `spribe.io`) must be allowed in the environment's network policy; check the site's terms; demo-page rounds are not operator rounds |
 | Official documentation | `collect-docs` collector implemented and tested on fixtures | Same network access; extracted RTP/fairness facts must be confirmed by a human |
-| Fairness verification | commitment check only | Operator's documented seed→multiplier formula, verified, then `register_derivation()` |
+| Fairness verification | `spribe_aviator_v1` derivation verified (16/16 demo rounds); `observe --verify-fairness` re-derives every observed round | Record the pre-round "next server seed SHA256" to check commitments; verify on a real-money operator |
 | Platform payout rules | simplified (`S·(M−1)` / `−S`, optional cap/fee/tie rule) | The operator's documented settlement rules, limits and fees |
-| RTP / reference distribution | RTP 97% confirmed on spribe.co; the distribution shape `P(X≥m)=RTP/m` is still an assumption | The game's provably-fair documentation (inside the game UI) to confirm the formula; operators may configure a different RTP |
+| RTP / reference distribution | RTP 97% stated on spribe.co; `P(X≥m)=0.97/m` follows from the verified formula (demo server) | Operators may configure a different RTP |
 | PostgreSQL | supported via `AVR_DATABASE_URL` (immutability triggers included) | `pip install psycopg[binary]` and a server; Alembic migrations recommended for schema changes |
 | Authentication | none | Add before exposing the API beyond localhost |
 

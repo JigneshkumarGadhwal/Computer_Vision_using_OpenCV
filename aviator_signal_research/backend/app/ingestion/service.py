@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from datetime import datetime, timezone
 
 import numpy as np
@@ -224,6 +225,10 @@ def add_single_round(
     round_timestamp: datetime | None = None,
     session_id: str | None = None,
     verified: bool = False,
+    server_seed: str | None = None,
+    server_seed_hash: str | None = None,
+    client_seeds: list[str] | None = None,
+    nonce: str | None = None,
 ) -> Round:
     """Manual or live-feed entry of one observed (already finished) round."""
     if source_kind not in ("manual", "live_feed", "authorized_api", "public_observation", "synthetic"):
@@ -266,6 +271,10 @@ def add_single_round(
         quality_status="valid" if not flags else "warning",
         quality_flags=flags,
         verified=verified,
+        server_seed=server_seed,
+        server_seed_hash=server_seed_hash,
+        client_seeds=json.dumps(client_seeds) if client_seeds is not None else None,
+        nonce=nonce,
     )
     session.add(r)
     session.flush()

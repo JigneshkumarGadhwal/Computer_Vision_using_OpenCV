@@ -1,0 +1,241 @@
+{
+ "source": "Aviator demo (aviator-demo.spribegaming.com) roundFairnessResponse messages, captured 2026-10-21; player names/avatars removed",
+ "rounds": [
+  {
+   "roundId": 12151162,
+   "serverSeed": "6uVRRJbAFSrf5ZfTfNQtmMfd3QMzGgrNNcSVOtwj",
+   "clientSeeds": [
+    "ZdIMVVU28TkrOm3wJrK1",
+    "XCiUiUn8nmdIqnQCJaXk",
+    "KYeCJSSeQ20o1K8VB8Wb"
+   ],
+   "sha512": "b42eebc12815962ba224dc1dbde2ad591c8b476d131fcaa20f8e1409b513d1eb6f004e4909e484051f7c0b2733d7352c22b7a79ecad59584ff5ae168d593c94d",
+   "hex13": "b42eebc128159",
+   "decimal": 3169817868796249,
+   "number": 334.27984769133417,
+   "result": 3.27,
+   "roundStartDate": 1792606121239
+  },
+  {
+   "roundId": 12151161,
+   "serverSeed": "aCs2ZtOY4Q9SJvqP1z3aKjYIb48w2aeIdsMN91bc",
+   "clientSeeds": [
+    "MPdz83UG7kC1zToDLEUR",
+    "v4b48yUlJH3yiIHxCPd5",
+    "pNbyg0iLV3CrY4KKR0ml"
+   ],
+   "sha512": "6947e0eb1b627634a9f2d066b98824211b932cf2bfbc8bcf89ebf51e6326869bc9e75e5f680a49136814aadff652c5aac5720435d79c502ffbc04b539fa57646",
+   "hex13": "6947e0eb1b627",
+   "decimal": 1852118993581607,
+   "number": 168.15373170294035,
+   "result": 1.64,
+   "roundStartDate": 1792606106239
+  },
+  {
+   "roundId": 12151158,
+   "serverSeed": "tcYos5yaSwhewUvBwWG2PVfRHcX3t122YflrcvOs",
+   "clientSeeds": [
+    "CMdKY8NsgCVHYj10laoN",
+    "ylRQZxHJH0DB2EAiLSZP",
+    "yeaYQuNgisa73a4c4mln"
+   ],
+   "sha512": "e2aa1a8c1fb7a10e31cdfade1a0a5356a1b022ccb1027ff7076d6ee0813583423c8e8a05928b75210b2f33b7ae6fb75a5b0ad9f8b2729e788c56efb223e89d33",
+   "hex13": "e2aa1a8c1fb7a",
+   "decimal": 3987523483335546,
+   "number": 863.9352317736365,
+   "result": 8.46,
+   "roundStartDate": 1792606071439
+  },
+  {
+   "roundId": 12151157,
+   "serverSeed": "AoMbAS8bbWqwdnkWfNUeXvhyqxyhsYtNohz23Ouw",
+   "clientSeeds": [
+    "MYZRGKWOF9IoZxaYcrtY",
+    "2fFaLx95Re5dXbeD1BzT",
+    "rXzeeDDzE1qx9EZCTLcP"
+   ],
+   "sha512": "5f421320c8c8a5c4e029de426e4be812e4b45edfbadc7ec62ec2619391767306014747a8876d7497e2e7b5698d6fe1f9196218100e38d92f17a1b43a589794ff",
+   "hex13": "5f421320c8c8a",
+   "decimal": 1675798294334602,
+   "number": 157.6689132652091,
+   "result": 1.54,
+   "roundStartDate": 1792606057139
+  },
+  {
+   "roundId": 12151153,
+   "serverSeed": "KbjYajHYfsLao4WXSTLZFa6ObObClCeKm6PFzAnj",
+   "clientSeeds": [
+    "PHwcIhgfeOql3anSc1PI",
+    "UssX8Yn299GW2BTM6C6I",
+    "je97sfMPh67Bq5Oimaac"
+   ],
+   "sha512": "facc62a19aa0d471f7418cf853cb1e04ae8347eeed5ce850b663e597d49e76176fda050c396ca7af4053a39d59471e82ae3eaf44ab56a72c64cc28b72de7694c",
+   "hex13": "facc62a19aa0d",
+   "decimal": 4412091760486925,
+   "number": 4872.328230281659,
+   "result": 47.73,
+   "roundStartDate": 1792606001440
+  },
+  {
+   "roundId": 12151152,
+   "serverSeed": "FEGJJjsuzRgET51hLhH7RXo3YnEJ2wcZuRql0MAc",
+   "clientSeeds": [
+    "4wYGTNdAIbxAw23uDXyS",
+    "sE4aEBtTWmPewQFAIdHk",
+    "GxJ5JUEYlCAd9zkAWZhw"
+   ],
+   "sha512": "a1f15b38a117d00d4efe47904804566e48dd27baf61a9c0e69d6344cff3016826354bbb0062b21fce53977b4a0ddb6330ca9e0ab59257d4e5ac9f0a0e582f819",
+   "hex13": "a1f15b38a117d",
+   "decimal": 2848927834050941,
+   "number": 269.4530509976331,
+   "result": 2.64,
+   "roundStartDate": 1792605980640
+  },
+  {
+   "roundId": 12151151,
+   "serverSeed": "QuGbk9shPXO65vLssGxwkm3nCbP6JpopTGJMImha",
+   "clientSeeds": [
+    "tHIRehM1fFgWBMcMNnwb",
+    "64u2ldSMzHef4DCF4Qze",
+    "2qdn8wtATcW5kqnekamN"
+   ],
+   "sha512": "64f40e9d67a473690484d8744277badb0580d3d16580ef2fe8efb22034d56ce3929df77631c28d0c79e19b8afb94d8f212e84e499358f61befeb9f2f39c991ef",
+   "hex13": "64f40e9d67a47",
+   "decimal": 1775990079912519,
+   "number": 163.46047898431775,
+   "result": 1.6,
+   "roundStartDate": 1792605965939
+  },
+  {
+   "roundId": 12151149,
+   "serverSeed": "OuFIZrprt6TY4ZC6sx1ZGI1hP3wyGk7Ociirk79u",
+   "clientSeeds": [
+    "iL6sEmWjpS7ux9TvSPjW",
+    "9mXB3SQjv2OYIgvjRdc9",
+    "H3IpPj8UpEctw7IH25GE"
+   ],
+   "sha512": "9732caf694a6aa99beb9f9e75bd9f3cf1ebe7c3bdabbe5a55e34cdd176cd3c9780bd31124c686af99ee0806ab70967fcff91193b6201fa6d4f1210c3b087d5f2",
+   "hex13": "9732caf694a6a",
+   "decimal": 2659910549064298,
+   "number": 241.8283908907724,
+   "result": 2.36,
+   "roundStartDate": 1792605946444
+  },
+  {
+   "roundId": 12151147,
+   "serverSeed": "h5XqLNTXKLULfoVGo5fyN56l6YFMSacAFBW2f9KL",
+   "clientSeeds": [
+    "lI4QiX4KifdS4m6XOmvY",
+    "URsxqBCkFGjPRp5BqT0J",
+    "Cbq1t74dNORbDf9zNVsw"
+   ],
+   "sha512": "ad830b8e70d68546458085f6db0196dca1e546852beb94d9b3700213b67607ba8961f43b18de54d9a4c59e19c58efea33f6fa2275658f1dd006fde439b396b9f",
+   "hex13": "ad830b8e70d68",
+   "decimal": 3052453539286376,
+   "number": 307.244299365009,
+   "result": 3.01,
+   "roundStartDate": 1792605924084
+  },
+  {
+   "roundId": 12151144,
+   "serverSeed": "C1DB7rDiJrGCDgZCrXHV0nIwQIsB0DULRyKVylf1",
+   "clientSeeds": [
+    "LXp8hwCEMJv1Tt7bASej",
+    "8W8GAEYja0fv82c4iRtC",
+    "9PMGbWGcoXUGEm7Rkn2u"
+   ],
+   "sha512": "810a6b69561aa556d3066a999f32fd967624157a56c5731dd784bff4e3441d435c0c084dd750a3120147e10c4b50dd208d7a4e82aabe165fffa4566f55baa9cc",
+   "hex13": "810a6b69561aa",
+   "decimal": 2270108027543978,
+   "number": 199.62303110712847,
+   "result": 1.95,
+   "roundStartDate": 1792605906939
+  },
+  {
+   "roundId": 12151141,
+   "serverSeed": "LHdjLxRkTxFotvkOwBzMCLs2rMBcprtRcNcilPev",
+   "clientSeeds": [
+    "4pOxf1IKeQOfUPpK8544",
+    "sm7IZXHbE2Rhn8nbWwwY",
+    "DKyOylaJxoWhUma1z6m8"
+   ],
+   "sha512": "84874ccd01c29132f278645fa885a54810e5626bb3a54054542dd2324f03e339bba7ca1e623546230bb34506dd2761516e2cbc71d2274d983ee2215bd79ab755",
+   "hex13": "84874ccd01c29",
+   "decimal": 2331466303282217,
+   "number": 205.2619690353587,
+   "result": 2.01,
+   "roundStartDate": 1792605889439
+  },
+  {
+   "roundId": 12151140,
+   "serverSeed": "OKGpe9fGvO8QXR45bjOobUJK38y0ZafaSnKXY4di",
+   "clientSeeds": [
+    "NFmkCCAVMYvkjYjZeW4N",
+    "SqabmGMv3hq1Vu15vYST",
+    "vcuaceZ1jugrdZlxiI8i"
+   ],
+   "sha512": "142783989e4fbd42837c05fe856232e332c3a14988e6ae28c5ff5d4b6165cd2c4f84ebe64aff04416672989dc50eebd5b8a1e6f74e534f8589415ac1f9d724a4",
+   "hex13": "142783989e4fb",
+   "decimal": 354559105557755,
+   "number": 107.46011295037479,
+   "result": 1.05,
+   "roundStartDate": 1792605879839
+  },
+  {
+   "roundId": 12151138,
+   "serverSeed": "c2ZzLIZEeAxOd4KGL6I5DQyQ6NZH3Z0MFPD5DCC9",
+   "clientSeeds": [],
+   "sha512": "564c4fa679e3eba86f5747634b6b7b49d1d03aab573bf9c0d7b4d7afaee5bc172fc3ba8d3c5c69f288f4aa95f42cb024b79a3241c1318e9ae862d6712a31d028",
+   "hex13": "564c4fa679e3e",
+   "decimal": 1518172061015614,
+   "number": 149.34422396791103,
+   "result": 1.46,
+   "roundStartDate": 1792605866239
+  },
+  {
+   "roundId": 12151134,
+   "serverSeed": "WH7cVTtAa0SCwaPt2YNsxKaVp60ZdtQSB1WW0tHk",
+   "clientSeeds": [
+    "kc2tUQn0ZygQrzuRdEiH",
+    "TnfPulnHokkFU7kvndIO",
+    "6KjQqs9hMdIEoCqeLITr"
+   ],
+   "sha512": "6d5989d38098ab6309d9940f0893998ec8ec20f68bd63cfd24291f2a20d6b51789c44c889cb672f8f734277f8b9eb2b8da922243f6cecdd8aa634a68c690f159",
+   "hex13": "6d5989d38098a",
+   "decimal": 1923701309704586,
+   "number": 172.8193549554523,
+   "result": 1.69,
+   "roundStartDate": 1792605837539
+  },
+  {
+   "roundId": 12151133,
+   "serverSeed": "U6m0I4L6E4pgsk12vWZR9R7mmwxc9tPgnLE9kXha",
+   "clientSeeds": [
+    "dBGW9rRjAmPKbaAhZ7QC",
+    "Zb5cI9lQ9LIYjvO2FZkL",
+    "7FW5p4tZpXR1zF78iQbO"
+   ],
+   "sha512": "3223e6df795d85cd72b9a9b5decca979dbff2c2c3fd7eacf41b0f17ff7a775a3d810266f4b75234c48b6f6bb2f6724b14f5d171f0f3df14d1b6e0987882ce3ea",
+   "hex13": "3223e6df795d8",
+   "decimal": 882076458391000,
+   "number": 123.1129395853945,
+   "result": 1.2,
+   "roundStartDate": 1792605826257
+  },
+  {
+   "roundId": 12151128,
+   "serverSeed": "FuNUfXDcIVjAANEddj3XW0aht0k3CJsR2xfJdeEW",
+   "clientSeeds": [
+    "l1xZ3hxNlYRGKqtTC7k5",
+    "M8fnHVVLMgJMFki5aQRW",
+    "BH4bj3NKzL1oivhvrog7"
+   ],
+   "sha512": "dd8294146a3686d15d7c25f35e157f8d0ccf0126a0f88e36acb7351b2d08ad151b9de3d0e74852757d05979c05b06ce1aeb36dd17ecef384164ea716adbf63cb",
+   "hex13": "dd8294146a368",
+   "decimal": 3896846397645672,
+   "number": 734.8232218094411,
+   "result": 7.19,
+   "roundStartDate": 1792605793439
+  }
+ ]
+}

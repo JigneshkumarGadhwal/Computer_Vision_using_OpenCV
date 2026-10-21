@@ -2,7 +2,9 @@
 
 Rules enforced here (never bypassed):
 
-* robots.txt is fetched and obeyed for every host before any page request.
+* robots.txt is fetched and obeyed for every host before any page request,
+  following RFC 9309 (4xx = no rules; 5xx/unreachable = full disallow;
+  ``AVR_ROBOTS_4XX=disallow`` for a stricter reading).
 * A per-host minimum interval between requests (rate limit).
 * The collector identifies itself honestly via its User-Agent.
 * Anti-bot challenges, CAPTCHAs and login walls STOP collection. There is no
@@ -107,6 +109,8 @@ class AccessPolicy:
     user_agent: str = USER_AGENT
     timeout_s: float = 20.0
     obey_robots: bool = True
+    robots_4xx: str = field(default_factory=lambda: os.environ.get("AVR_ROBOTS_4XX", "allow"))  # allow | disallow
+    robots_notes: dict[str, str] = field(default_factory=dict)
     _robots: dict[str, RobotFileParser | None] = field(default_factory=dict)
     _last_request: dict[str, float] = field(default_factory=dict)
     _lock: threading.Lock = field(default_factory=threading.Lock)
@@ -139,13 +143,24 @@ class AccessPolicy:
             if cause:
                 raise NetworkBlocked(f"cannot reach {origin}: {cause}", robots_url) from exc
             raise FetchFailed(f"robots.txt request failed: {exc}", robots_url) from exc
-        if resp.status_code in (401, 403):
-            # RFC 9309: an inaccessible robots.txt means full disallow.
+        if 500 <= resp.status_code or resp.status_code == 429:
+            # RFC 9309 §2.3.1.4: robots.txt unreachable (5xx) -> assume complete disallow.
             rp.parse(["User-agent: *", "Disallow: /"])
-        elif resp.status_code >= 400:
-            rp = None  # no robots.txt -> everything allowed
+            self.robots_notes[origin] = f"robots.txt HTTP {resp.status_code}: treated as full disallow (RFC 9309)"
+        elif 400 <= resp.status_code < 500:
+            # RFC 9309 §2.3.1.3: robots.txt unavailable (4xx, incl. 401/403) -> crawlers MAY access the site.
+            # ``robots_4xx="disallow"`` keeps the stricter behaviour if preferred.
+            if self.robots_4xx == "disallow":
+                rp.parse(["User-agent: *", "Disallow: /"])
+            else:
+                rp = None
+            self.robots_notes[origin] = (f"robots.txt HTTP {resp.status_code}: treated as "
+                                         f"{'full disallow (strict mode)' if self.robots_4xx == 'disallow' else 'no restrictions (RFC 9309)'}")
         else:
-            rp.parse(resp.text.splitlines())
+            body = resp.text
+            if "<html" in body[:500].lower():
+                self.robots_notes[origin] = "robots.txt returned an HTML page (no robots rules published)"
+            rp.parse(body.splitlines())
         self._robots[origin] = rp
         return rp
 

@@ -13,8 +13,10 @@
 
 ## What is enforced (never bypassed)
 
-* robots.txt fetched and obeyed for every host (inaccessible robots.txt with 401/403 = full disallow);
-  `Crawl-delay` is honoured.
+* robots.txt fetched and obeyed for every host, including the final host after redirects, following RFC 9309:
+  4xx (incl. 401/403) = no rules, 5xx/429/unreachable = full disallow. `AVR_ROBOTS_4XX=disallow` makes 4xx a full
+  disallow. `Crawl-delay` is honoured. (An earlier version treated 401/403 as full disallow and wrongly cited the RFC
+  for it; corrected 2026-10-21.)
 * Minimum interval between requests per host (default 5 s, `AVR_COLLECTOR_MIN_INTERVAL`).
 * Honest User-Agent (`AVR_COLLECTOR_USER_AGENT`).
 * Retries with exponential backoff only for 429/5xx and transient connection errors; `Retry-After` respected.
@@ -83,7 +85,8 @@ python scripts/research_cli.py observe --profile spribe --confirm-legal-age --so
 | Observer stops on CAPTCHA page and on robots.txt disallow | pass |
 | **Real target `https://spribe.co/games/aviator`** (after `spribe.co` was allowed) | **collected** (rendered; Angular app). Official text: *"Return to Player (RTP) 97%"*, game type *Mini Game*, devices *Desktop, Tablet, Mobile*. No provably-fair formula or round history is published on the page. `robots.txt` is not a real robots file (the app returns its HTML for every path) → no crawl rules |
 | Demo game URL | found in spribe.co's public JS bundle: `https://demo.spribe.io/launch/aviator?currency=USD&lang=EN&return_url=https://spribe.co/games`, opened by script after an **"I'm over 18"** confirmation → stored in `app/collectors/profiles.py`; `observe --profile spribe` requires `--confirm-legal-age` |
-| **Demo host `demo.spribe.io`** | **not reachable**: `spribe.io` is a different domain and is still refused by the network policy (`network_blocked`) |
+| Demo launcher `demo.spribe.io` (after `spribe.io` was allowed) | `/launch/aviator` answers **302** to `https://aviator-demo.spribegaming.com/?currency=USD&operator=demo&jurisdiction=CW&...&token=…` (a fresh demo session). Its `robots.txt` returns a CloudFront **403** "Request blocked" → per RFC 9309 no rules |
+| **Game host `aviator-demo.spribegaming.com`** | **not reachable**: `spribegaming.com` is refused by the network policy (`network_blocked`) |
 
 Fixes made after running against the real site: label/value pairs (`<p>Return to Player (RTP)</p><h5>97%</h5>`)
 are now paired; buttons that open links by script are recorded.

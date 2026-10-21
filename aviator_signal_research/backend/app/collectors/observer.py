@@ -180,15 +180,18 @@ def make_db_sink(source_name: str, url: str) -> RoundSink:
     from ..ingestion.service import add_single_round, get_or_create_source
     from ..signals import resolve_live_outcomes
 
-    with session_scope() as s:
-        get_or_create_source(
-            s, source_name, "public_observation",
-            description=(f"Rounds observed on {url} (public interface). Not verified; timestamps are "
-                         "observation times. A demo page may not reflect real-money rounds."),
-        )
+    created = False
 
     def sink(value: float, observed_at: datetime, round_id: str) -> None:
+        nonlocal created
         with session_scope() as s:
+            if not created:  # create the source only once a real round has been observed
+                get_or_create_source(
+                    s, source_name, "public_observation",
+                    description=(f"Rounds observed on {url} (public interface). Not verified; timestamps are "
+                                 "observation times. A demo page may not reflect real-money rounds."),
+                )
+                created = True
             r = add_single_round(s, source_name, "public_observation", value, round_id=round_id,
                                  round_timestamp=observed_at, verified=False)
             resolve_live_outcomes(s, r.source_id)
@@ -217,6 +220,8 @@ def observe(url: str, source_name: str, *, minutes: float = 30, poll_s: float = 
     try:
         with httpx.Client(follow_redirects=True) as client:
             policy.check_allowed(url, client)
+        if policy.robots_notes.get(policy.origin(url)):
+            raw({"kind": "robots_checked", "origin": policy.origin(url), "note": policy.robots_notes[policy.origin(url)]})
     except CollectorError as exc:
         res.stop_reason, res.finished_at = exc.reason, datetime.now(timezone.utc).isoformat()
         res.errors.append(exc.to_dict())
@@ -256,7 +261,8 @@ def observe(url: str, source_name: str, *, minutes: float = 30, poll_s: float = 
                     cause = classify_network_error(exc) or (
                         "outbound proxy refused the connection" if "ERR_TUNNEL_CONNECTION_FAILED" in str(exc) else None)
                     if cause or "ERR_NAME_NOT_RESOLVED" in str(exc):
-                        raise NetworkBlocked(f"cannot open {url}: {cause or 'DNS resolution failed'}", url) from exc
+                        raise NetworkBlocked(f"cannot open {url} (or a host it redirects to): "
+                                             f"{cause or 'DNS resolution failed'}", url) from exc
                     raise FetchFailed(f"cannot open {url}: {exc}", url) from exc
                 status = resp.status if resp else 0
                 html = rendered_html(page)
@@ -266,6 +272,12 @@ def observe(url: str, source_name: str, *, minutes: float = 30, poll_s: float = 
                 if status >= 400:
                     raise FetchFailed(f"{url} -> HTTP {status}", url)
                 raw({"kind": "page_loaded", "url": page.url, "status": status})
+                if policy.origin(page.url) != policy.origin(url):
+                    # Redirected to another host (e.g. a game server): its robots.txt applies too.
+                    with httpx.Client(follow_redirects=True) as client:
+                        policy.check_allowed(page.url, client)
+                    raw({"kind": "robots_checked", "origin": policy.origin(page.url),
+                         "note": policy.robots_notes.get(policy.origin(page.url))})
 
             load()
             prev: list[float] = []

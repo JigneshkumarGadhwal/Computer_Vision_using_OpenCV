@@ -218,3 +218,24 @@ def test_reference_api(site, env, monkeypatch, tmp_path):
         assert c.get("/api/reference").json()[0]["summary"]["mentions_provably_fair"]
         assert c.post("/api/reference/collect", json={"urls": ["ftp://x"]}).status_code == 422
         assert c.post("/api/reference/collect", json={"urls": []}).status_code == 422
+
+
+def test_robots_status_handling_follows_rfc9309(monkeypatch):
+    import httpx
+
+    def client_for(status, body=""):
+        return httpx.Client(transport=httpx.MockTransport(lambda req: httpx.Response(status, text=body)))
+
+    pol = AccessPolicy(min_interval_s=0, robots_4xx="allow")
+    pol.check_allowed("https://a.test/page", client_for(403, "Request blocked"))  # 4xx -> allowed
+    assert "no restrictions" in pol.robots_notes["https://a.test"]
+    strict = AccessPolicy(min_interval_s=0, robots_4xx="disallow")
+    with pytest.raises(RobotsDisallowed):
+        strict.check_allowed("https://a.test/page", client_for(403))
+    with pytest.raises(RobotsDisallowed):
+        AccessPolicy(min_interval_s=0).check_allowed("https://b.test/page", client_for(503))  # 5xx -> disallow
+    html = AccessPolicy(min_interval_s=0)
+    html.check_allowed("https://c.test/page", client_for(200, "<!DOCTYPE html><html><body>app</body></html>"))
+    assert "HTML page" in html.robots_notes["https://c.test"]
+    monkeypatch.setenv("AVR_ROBOTS_4XX", "disallow")
+    assert AccessPolicy().robots_4xx == "disallow"

@@ -84,7 +84,9 @@ async def test_post_timeout_is_uncertain_not_retried():
         await c.request("POST", "/order", json={})
     assert n["c"] == 1  # never blindly resubmitted
     n["c"] = 0
-    with pytest.raises(Exception):
+    from argona.exchanges.base import ProviderError
+
+    with pytest.raises(ProviderError):
         await c.request("GET", "/x")
     assert n["c"] == 4  # idempotent GETs are retried with backoff
     await c.close()
@@ -133,3 +135,40 @@ async def test_kalshi_signing_and_order_body():
     assert captured["side"] == "ask" and captured["price"] == "0.7000" and captured["count"] == "10.00"
     assert captured["client_order_id"] == "ARG-abc"
     await t.close()
+
+
+async def test_proxy_and_connect_errors_become_provider_errors():
+    from argona.exchanges.base import ProviderError
+
+    def handler(req):
+        raise httpx.ProxyError("403 Forbidden", request=req)
+
+    c = HttpClient("https://x.test", transport=httpx.MockTransport(handler), rps=1000, max_retries=1)
+    with pytest.raises(ProviderError):
+        await c.request("GET", "/markets")
+    assert c.stats.errors == 2 and "ProxyError" in c.stats.last_error
+    await c.close()
+
+
+async def test_one_failing_venue_does_not_block_discovery(settings):
+    """Polymarket unreachable (proxy 403) must not stop Kalshi/SIM discovery, and must emit a disconnect event."""
+    from argona.exchanges.registry import ProviderRegistry
+    from tests.conftest import build_core
+
+    def deny(req):
+        raise httpx.ProxyError("403 Forbidden", request=req)
+
+    settings.providers = "polymarket,sim"
+    reg = ProviderRegistry(settings, transports={"polymarket": httpx.MockTransport(deny)})
+    from argona.core import Core
+    from tests.conftest import NullSource, RecordingNotifier
+
+    core = Core(settings, registry=reg, notifier=RecordingNotifier(), crypto_source=NullSource(), weather_source=NullSource())
+    await core.start(run_scheduler=False)
+    try:
+        summary = await core.rigo.discover()
+        assert "error" in summary["polymarket"] and summary["sim"]["listed"] > 0
+        assert any(e["type"] == "provider_disconnected" for e in core.notifier.events)
+        assert core.registry.status["polymarket"].connected is False and core.registry.status["sim"].connected is True
+    finally:
+        await core.stop()

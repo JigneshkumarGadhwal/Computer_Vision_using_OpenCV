@@ -32,7 +32,8 @@ class Rigo(Agent):
                 try:
                     markets = await adapter.discover()
                     self.api_calls += 1
-                except (ProviderError, OSError) as e:
+                except Exception as e:  # one venue failing must never block the others
+                    log.warning("%s discovery failed: %s", venue, e)
                     flipped = self.core.registry.mark_sync(venue, False, error=str(e))
                     summary[venue] = {"error": str(e)[:200]}
                     if flipped or self.core.registry.status[venue].last_sync is None:
@@ -115,7 +116,8 @@ class Rigo(Agent):
                     books.update(await adapter.fetch_books(ms))
                     self.api_calls += 1
                     self.core.registry.mark_sync(venue, True)
-                except (ProviderError, OSError) as e:
+                except Exception as e:  # isolate venue failures
+                    log.warning("%s order books failed: %s", venue, e)
                     if self.core.registry.mark_sync(venue, False, error=str(e)):
                         await self.core.events.emit("provider_disconnected", f"{venue}: order books unavailable ({str(e)[:150]})",
                                                     severity="warning", agent=self.name)

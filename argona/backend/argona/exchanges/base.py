@@ -142,7 +142,7 @@ class HttpClient:
                 hdrs.update(header_factory(method, url))
             try:
                 resp = await self.client.request(method, url, params=params, json=json, headers=hdrs)
-            except (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError) as e:
+            except httpx.TransportError as e:  # timeouts, connection/proxy/protocol errors
                 self._fail(f"{type(e).__name__}: {e}")
                 last_exc = e
                 if not idempotent:
@@ -178,7 +178,9 @@ class HttpClient:
                 return resp.json()
             except ValueError as e:
                 raise ProviderError(f"{method} {path}: invalid JSON") from e
-        raise last_exc or ProviderError(f"{method} {path}: failed")
+        if isinstance(last_exc, ProviderError):
+            raise last_exc
+        raise ProviderError(f"{method} {path}: {type(last_exc).__name__}: {last_exc}") from last_exc
 
 
 class MarketDataAdapter(abc.ABC):

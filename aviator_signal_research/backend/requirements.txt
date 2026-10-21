@@ -1,0 +1,15 @@
+# Backend runtime (versions tested in development)
+fastapi==0.156.4
+uvicorn==0.54.0
+python-multipart==0.0.32
+sqlalchemy==2.1.5
+pydantic==2.13.5
+numpy==2.5.3
+pandas==3.0.5
+scipy==1.18.1
+scikit-learn==1.9.1
+statsmodels==0.15.0
+lightgbm==4.7.0
+joblib==1.6.0
+# Optional: PostgreSQL driver
+# psycopg[binary]==3.2.3

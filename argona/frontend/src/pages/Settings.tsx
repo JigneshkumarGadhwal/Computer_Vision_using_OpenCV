@@ -100,7 +100,7 @@ export default function Settings({ onChange }: { onChange: () => void }) {
       </Panel>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
         <Panel title="Data & execution providers">
-          <table className="grid"><thead><tr><th>Venue</th><th>Market data</th><th>Trading credentials</th><th>Verified</th><th /></tr></thead>
+          <table className="tbl"><thead><tr><th>Venue</th><th>Market data</th><th>Trading credentials</th><th>Verified</th><th /></tr></thead>
             <tbody>{d.providers.map((p: any) => (
               <tr key={p.venue}><td>{p.venue} {p.is_simulated && <Badge tone="sim">sim</Badge>}</td><td><Badge tone="up">enabled</Badge></td>
                 <td>{p.is_simulated ? <span className="text-ink3">n/a (never live)</span> : p.trading_configured ? <Badge tone="amber">configured</Badge> : <span className="text-ink3">not configured</span>}</td>
@@ -109,7 +109,7 @@ export default function Settings({ onChange }: { onChange: () => void }) {
           <div className="px-3 py-2 text-ink3 text-[10.5px]">Static configuration (providers, credentials, intervals) lives in <code>.env</code>; see docs/OPERATIONS.md. Providers: {d.static.providers.join(", ")} · DB: {d.static.database} · auth: {d.static.auth_enabled ? "token" : "loopback only"}</div>
         </Panel>
         <Panel title="Configuration history">
-          <div className="overflow-auto max-h-72"><table className="grid"><tbody>{(hist.data ?? []).map((h) => (
+          <div className="overflow-auto max-h-72"><table className="tbl"><tbody>{(hist.data ?? []).map((h) => (
             <tr key={h.id}><td className="text-ink3">{ago(h.ts)}</td><td>{h.key}</td><td>{h.actor}</td></tr>))}</tbody></table></div>
         </Panel>
       </div>

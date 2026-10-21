@@ -25,7 +25,7 @@ export function MarketDetail({ k, onClose }: { k: string; onClose: () => void })
           </div>
           <Panel title="Probability estimates (latest first)">
             <div className="overflow-auto max-h-64">
-              <table className="grid"><thead><tr><th>Time</th><th className="num">P(YES)</th><th className="num">Mkt mid</th><th className="num">σ</th><th className="num">Conf</th><th>Models / reason</th></tr></thead>
+              <table className="tbl"><thead><tr><th>Time</th><th className="num">P(YES)</th><th className="num">Mkt mid</th><th className="num">σ</th><th className="num">Conf</th><th>Models / reason</th></tr></thead>
                 <tbody>{d.data.estimates.map((e: any) => (
                   <tr key={e.id}><td className="text-ink3">{ago(e.ts)}</td><td className="num">{e.abstained ? "—" : px(e.q_yes)}</td><td className="num">{px(e.market_mid)}</td>
                     <td className="num">{px(e.sigma)}</td><td className="num">{e.confidence?.toFixed(2)}</td>
@@ -36,7 +36,7 @@ export function MarketDetail({ k, onClose }: { k: string; onClose: () => void })
           </Panel>
           <Panel title="Evidence (provenance)">
             {d.data.evidence.length === 0 ? <Empty>No external evidence attached to recent estimates.</Empty> : (
-              <table className="grid"><tbody>{d.data.evidence.map((e: any) => (
+              <table className="tbl"><tbody>{d.data.evidence.map((e: any) => (
                 <tr key={e.id}><td>{e.kind}</td><td>{e.source} {e.is_simulated && <SimBadge />}</td><td className="text-ink3">{e.observed_at}</td>
                   <td><Badge tone={e.reliability === "high" ? "up" : e.reliability === "low" ? "down" : "muted"}>{e.reliability}</Badge></td>
                   <td className="whitespace-normal text-[10.5px]">{e.summary} <a className="text-series" href={e.source_url.startsWith("http") ? e.source_url : undefined} target="_blank" rel="noreferrer">source</a></td></tr>))}</tbody></table>)}
@@ -68,7 +68,7 @@ export default function Scanner() {
       </div>}>
       <ErrorLine error={d.error} />
       <div className="overflow-auto max-h-[calc(100vh-230px)]">
-        <table className="grid">
+        <table className="tbl">
           <thead><tr><th>Question</th><th>Cat</th><th>Venue</th><th className="num">YES bid/ask</th><th className="num">NO bid/ask</th><th className="num">Spread</th>
             <th className="num">Fair</th><th className="num">Net edge</th><th className="num">Liquidity</th><th className="num">Conf</th><th className="num">Fresh</th><th className="num">Closes</th><th>Status</th></tr></thead>
           <tbody>

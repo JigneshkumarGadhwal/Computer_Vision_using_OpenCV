@@ -61,7 +61,7 @@ export default function Portfolio({ account }: { account?: string }) {
         <Panel title="Capital at risk by category"><div className="p-2">{st && <ExposureBars data={st.exposure_by_category} equity={st.equity} />}</div></Panel>
       </div>
       <Panel title="Performance">
-        <table className="grid"><thead><tr><th>Window</th><th className="num">Trades</th><th className="num">Win rate</th><th className="num">Net realized</th><th className="num">Gross profit</th><th className="num">Gross loss</th><th className="num">Profit factor</th><th className="num">Avg return</th><th className="num">Fees</th><th className="num">Slippage</th><th className="num">Max DD</th></tr></thead>
+        <table className="tbl"><thead><tr><th>Window</th><th className="num">Trades</th><th className="num">Win rate</th><th className="num">Net realized</th><th className="num">Gross profit</th><th className="num">Gross loss</th><th className="num">Profit factor</th><th className="num">Avg return</th><th className="num">Fees</th><th className="num">Slippage</th><th className="num">Max DD</th></tr></thead>
           <tbody>{Object.entries(perf).map(([w, v]: any) => (
             <tr key={w}><td>{w}</td><td className="num">{v.trades}</td><td className="num">{pct(v.win_rate, 0)}</td><td className="num"><Signed v={v.net_realized}>{signedUsd(v.net_realized)}</Signed></td>
               <td className="num">{usd(v.gross_profit)}</td><td className="num">{usd(v.gross_loss)}</td><td className="num">{v.profit_factor == null ? "—" : Number(v.profit_factor).toFixed(2)}</td>
@@ -69,7 +69,7 @@ export default function Portfolio({ account }: { account?: string }) {
       </Panel>
       <Panel title={`Open positions — ${st?.positions?.length ?? 0}`}>
         <div className="overflow-auto">
-          <table className="grid"><thead><tr><th>Market</th><th>Side</th><th className="num">Contracts</th><th className="num">Avg cost</th><th className="num">Mark (bid)</th><th className="num">Cost basis</th><th className="num">Value</th><th className="num">Unrealized</th><th>Category</th><th className="num">Resolves</th></tr></thead>
+          <table className="tbl"><thead><tr><th>Market</th><th>Side</th><th className="num">Contracts</th><th className="num">Avg cost</th><th className="num">Mark (bid)</th><th className="num">Cost basis</th><th className="num">Value</th><th className="num">Unrealized</th><th>Category</th><th className="num">Resolves</th></tr></thead>
             <tbody>{(st?.positions ?? []).map((x: any) => (
               <tr key={x.id}><td className="max-w-[360px] truncate" title={x.question}>{x.question} {x.is_simulated && <SimBadge />}</td><td>{x.outcome}</td>
                 <td className="num">{x.contracts}</td><td className="num">{px(x.avg_price)}</td><td className="num">{px(x.mark)}</td><td className="num">{usd(x.cost_basis)}</td>
@@ -78,7 +78,7 @@ export default function Portfolio({ account }: { account?: string }) {
         </div>
       </Panel>
       <Panel title={`Working orders — ${working.length}`}>
-        <table className="grid"><thead><tr><th>#</th><th>Market</th><th>Order</th><th className="num">Filled</th><th>Status</th><th>Age</th><th /></tr></thead>
+        <table className="tbl"><thead><tr><th>#</th><th>Market</th><th>Order</th><th className="num">Filled</th><th>Status</th><th>Age</th><th /></tr></thead>
           <tbody>{working.map((o) => (
             <tr key={o.id}><td>{o.id}</td><td className="max-w-[340px] truncate">{o.question}</td><td>{o.action} {o.quantity} {o.outcome} ≤{px(o.limit_price)}</td>
               <td className="num">{o.filled_qty}</td><td><Badge tone={o.status === "UNKNOWN" ? "down" : "amber"}>{o.status}</Badge></td><td>{ago(o.created_at)}</td>
@@ -87,7 +87,7 @@ export default function Portfolio({ account }: { account?: string }) {
       </Panel>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
         <Panel title="Order history">
-          <div className="overflow-auto max-h-96"><table className="grid"><thead><tr><th>#</th><th>Time</th><th>Market</th><th>Order</th><th className="num">Avg fill</th><th>Status</th><th /></tr></thead>
+          <div className="overflow-auto max-h-96"><table className="tbl"><thead><tr><th>#</th><th>Time</th><th>Market</th><th>Order</th><th className="num">Avg fill</th><th>Status</th><th /></tr></thead>
             <tbody>{(orders.data ?? []).map((o) => (
               <tr key={o.id}><td>{o.id}</td><td className="text-ink3">{ago(o.created_at)}</td><td className="max-w-[220px] truncate" title={o.question}>{o.question}</td>
                 <td>{o.action} {o.filled_qty}/{o.quantity} {o.outcome}</td><td className="num">{px(o.avg_fill_price)}</td>
@@ -95,7 +95,7 @@ export default function Portfolio({ account }: { account?: string }) {
                 <td><button className="btn" onClick={() => setTrace(o.id)}>Trace</button></td></tr>))}</tbody></table></div>
         </Panel>
         <Panel title="Trade ledger (fills & settlements)">
-          <div className="overflow-auto max-h-96"><table className="grid"><thead><tr><th>Time</th><th>Type</th><th>Market</th><th>Action</th><th className="num">Qty</th><th className="num">Price</th><th className="num">Fee</th><th className="num">Cash Δ</th><th className="num">Realized</th></tr></thead>
+          <div className="overflow-auto max-h-96"><table className="tbl"><thead><tr><th>Time</th><th>Type</th><th>Market</th><th>Action</th><th className="num">Qty</th><th className="num">Price</th><th className="num">Fee</th><th className="num">Cash Δ</th><th className="num">Realized</th></tr></thead>
             <tbody>{(ledger.data ?? []).map((r, i) => (
               <tr key={i}><td className="text-ink3">{ago(r.ts)}</td><td>{r.type}{r.simulated && <> <SimBadge /></>}</td><td className="max-w-[200px] truncate" title={r.question}>{r.question}</td>
                 <td>{r.action} {r.outcome}</td><td className="num">{r.qty}</td><td className="num">{px(r.price)}</td><td className="num">{usd(r.fee, 4)}</td>

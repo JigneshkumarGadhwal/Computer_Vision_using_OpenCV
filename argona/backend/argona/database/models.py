@@ -78,7 +78,7 @@ class Market(Base):
     venue_market_id: Mapped[str] = mapped_column(String(160))
     event_id: Mapped[str | None] = mapped_column(String(160), index=True)
     question: Mapped[str] = mapped_column(Text)
-    outcome_label: Mapped[str | None] = mapped_column(String(200))
+    outcome_label: Mapped[str | None] = mapped_column(Text)
     category: Mapped[str] = mapped_column(String(32), index=True)
     rules: Mapped[str] = mapped_column(Text, default="")
     resolution_source: Mapped[str] = mapped_column(Text, default="")
@@ -120,7 +120,7 @@ class PriceObservation(Base):
     spread: Mapped[float | None] = mapped_column(Float)
     bid_depth_usd: Mapped[float] = mapped_column(Float, default=0.0)
     ask_depth_usd: Mapped[float] = mapped_column(Float, default=0.0)
-    source: Mapped[str] = mapped_column(String(40))
+    source: Mapped[str] = mapped_column(String(160))
     is_simulated: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
@@ -130,7 +130,7 @@ class OrderBookSnapshot(Base):
     market_key: Mapped[str] = mapped_column(String(160), index=True)
     ts: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
     book: Mapped[dict] = mapped_column(JSON)
-    source: Mapped[str] = mapped_column(String(40))
+    source: Mapped[str] = mapped_column(String(160))
     is_simulated: Mapped[bool] = mapped_column(Boolean, default=False)
 
 

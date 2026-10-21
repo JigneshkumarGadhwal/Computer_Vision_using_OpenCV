@@ -84,7 +84,7 @@ export default function Overview({ ov, events }: { ov: any; events: ArgonaEvent[
           </Panel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Panel title="Agents">
-              <table className="grid"><tbody>
+              <table className="tbl"><tbody>
                 {(ov.agents ?? []).map((a: any) => (
                   <tr key={a.name}><td className="text-amber">{a.name}</td>
                     <td>{a.status === "error" ? <Badge tone="down">error</Badge> : a.status === "running" ? <Badge tone="series">running</Badge> : <Badge>idle</Badge>}</td>
@@ -92,7 +92,7 @@ export default function Overview({ ov, events }: { ov: any; events: ArgonaEvent[
               </tbody></table>
             </Panel>
             <Panel title="Data providers">
-              <table className="grid"><tbody>
+              <table className="tbl"><tbody>
                 {(ov.providers ?? []).map((p: any) => (
                   <tr key={p.venue}><td>{p.venue} {p.is_simulated && <Badge tone="sim">sim</Badge>}</td>
                     <td>{p.connected ? <Badge tone="up">connected</Badge> : <Badge tone="down">down</Badge>}</td>

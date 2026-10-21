@@ -227,3 +227,18 @@ async def test_emergency_stop_cancels_and_blocks(core):
         await core.set_mode(TradingMode.PAPER)
     await core.emergency_reset()
     assert core.state.mode is TradingMode.STOPPED
+
+
+async def test_performance_is_json_safe_with_only_winners(core):
+    import json
+
+    m = market("W1")
+    await seed(core, m, OrderBook([BookLevel(0.70, 100)], [BookLevel(0.40, 100)], utcnow(), "t"))
+    await core.execution.submit(opportunity_id="w", market=m, outcome=Outcome.YES, action=Action.BUY, decision=decision(10, 0.40),
+                                account="paper", mode=TradingMode.PAPER, ttl_s=60, risk_assessment_id=None, estimate_id=None)
+    m.status, m.result, m.settlement_value = MarketStatus.RESOLVED, Outcome.YES, 1.0
+    await core.markets.upsert("kalshi", [m], core.state.runtime, full_listing=False)
+    await core.settle(m.key)
+    perf = await core.portfolio.performance("paper")
+    assert perf["wins"] == 1 and perf["profit_factor"] is None
+    json.dumps(perf, allow_nan=False)

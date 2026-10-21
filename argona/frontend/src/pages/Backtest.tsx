@@ -35,7 +35,7 @@ export default function Backtest() {
       <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-3">
         <Panel title="Runs">
           {(runs.data ?? []).length === 0 ? <Empty>No backtests yet.</Empty> : (
-            <table className="grid"><tbody>{runs.data!.map((x) => (
+            <table className="tbl"><tbody>{runs.data!.map((x) => (
               <tr key={x.id} onClick={() => setSel(x.id)} className={`cursor-pointer ${sel === x.id ? "bg-[#161b22]" : ""}`}>
                 <td>#{x.id}</td><td className="text-ink3">{ago(x.created_at)}</td>
                 <td><Badge tone={x.status === "completed" ? "up" : x.status === "failed" ? "down" : "amber"}>{x.status}</Badge></td>
@@ -56,9 +56,9 @@ export default function Backtest() {
               </div>
               <Panel title="Notes & limitations"><ul className="p-3 text-[11px] space-y-1">{(r.notes ?? []).map((n: string, i: number) => <li key={i} className="text-amber">• {n}</li>)}</ul></Panel>
               <Panel title="Equity (simulated fills)"><div className="p-2"><EquityChart data={r.equity_curve ?? []} start={m.starting_capital} /></div></Panel>
-              <Panel title="By category"><table className="grid"><thead><tr><th>Category</th><th className="num">Round trips</th><th className="num">P&L</th></tr></thead>
+              <Panel title="By category"><table className="tbl"><thead><tr><th>Category</th><th className="num">Round trips</th><th className="num">P&L</th></tr></thead>
                 <tbody>{Object.entries(m.by_category ?? {}).map(([k, v]: any) => <tr key={k}><td>{k}</td><td className="num">{v.trades}</td><td className="num">{signedUsd(v.pnl)}</td></tr>)}</tbody></table></Panel>
-              <Panel title={`Simulated fills (${(r.trades ?? []).length})`}><div className="overflow-auto max-h-80"><table className="grid"><thead><tr><th>Time</th><th>Market</th><th>Side</th><th className="num">Qty</th><th className="num">Price</th><th className="num">Fair</th><th className="num">Net EV</th></tr></thead>
+              <Panel title={`Simulated fills (${(r.trades ?? []).length})`}><div className="overflow-auto max-h-80"><table className="tbl"><thead><tr><th>Time</th><th>Market</th><th>Side</th><th className="num">Qty</th><th className="num">Price</th><th className="num">Fair</th><th className="num">Net EV</th></tr></thead>
                 <tbody>{(r.trades ?? []).slice(0, 500).map((t: any, i: number) => <tr key={i}><td className="text-ink3">{t.ts.slice(5, 16)}</td><td className="max-w-[300px] truncate">{t.question}</td><td>{t.action} {t.outcome}</td><td className="num">{t.qty}</td><td className="num">{t.price}</td><td className="num">{t.fair}</td><td className="num">{t.net_ev}</td></tr>)}</tbody></table></div></Panel>
             </>)}
         </div>

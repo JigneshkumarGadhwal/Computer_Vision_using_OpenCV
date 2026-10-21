@@ -297,7 +297,8 @@ class PortfolioService:
             "win_rate": (len(wins) / len(pnls)) if pnls else None,
             "gross_profit": round(sum(wins), 6), "gross_loss": round(sum(losses), 6),
             "net_realized": round(sum(pnls), 6),
-            "profit_factor": (sum(wins) / -sum(losses)) if losses else (None if not wins else float("inf")),
+            # undefined without losing trades (would be +inf, which is not valid JSON) -> null
+            "profit_factor": (sum(wins) / -sum(losses)) if losses else None,
             "avg_return_per_trade": (sum(rets) / len(rets)) if rets else None,
             "expectancy_usd": (sum(pnls) / len(pnls)) if pnls else None,
             "fees": round(sum(f.fee for f in fills), 6), "slippage": round(sum(f.slippage for f in fills), 6),

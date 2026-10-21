@@ -1,0 +1,21 @@
+# secrets & local state
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+data/
+backups/
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/

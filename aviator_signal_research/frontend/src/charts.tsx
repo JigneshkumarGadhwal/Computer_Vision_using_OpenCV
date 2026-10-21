@@ -78,7 +78,8 @@ export function ThresholdFrequencyChart({ rows }: { rows: Json[] }) {
 }
 
 export function HistogramChart({ bins }: { bins: Json[] }) {
-  const data = bins.map((b) => ({ name: b.to ? `${b.from}–${b.to}` : `${b.from}+`, count: b.count }));
+  const label = (v: number) => String(Number(v.toFixed(2)));
+  const data = bins.map((b) => ({ name: b.to ? `${label(b.from)}–${label(b.to)}` : `${label(b.from)}+`, count: b.count }));
   return (
     <ResponsiveContainer width="100%" height={240}>
       <BarChart data={data} margin={{ left: 8, right: 16, top: 8 }}>

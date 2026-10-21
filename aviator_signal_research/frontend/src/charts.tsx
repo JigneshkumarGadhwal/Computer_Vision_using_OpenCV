@@ -119,18 +119,18 @@ export function CalibrationChart({ selected, baseline, selectedName }: { selecte
     rows.map((r) => ({ x: r.mean_predicted, y: r.observed_rate, err: [r.observed_rate - r.observed_ci_low, r.observed_ci_high - r.observed_rate], n: r.count }));
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <ComposedChart margin={{ left: 8, right: 16, top: 8, bottom: 8 }}>
+      <ComposedChart margin={{ left: 8, right: 16, top: 8, bottom: 16 }}>
         <CartesianGrid stroke={C.grid} strokeDasharray="3 3" />
         <XAxis type="number" dataKey="x" domain={[lo, hi]} tick={{ fontSize: 11 }} tickFormatter={(v) => v.toFixed(2)} name="predicted"
           label={{ value: "mean predicted probability", position: "insideBottom", offset: -4, fontSize: 11 }} />
         <YAxis type="number" dataKey="y" domain={[lo, hi]} tick={{ fontSize: 11 }} tickFormatter={(v) => v.toFixed(2)} name="observed" />
         <Tooltip formatter={(v: number) => (typeof v === "number" ? v.toFixed(4) : String(v))} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
+        <Legend verticalAlign="top" wrapperStyle={{ fontSize: 12 }} />
         <ReferenceLine segment={[{ x: lo, y: lo }, { x: hi, y: hi }]} stroke={C.ref} strokeDasharray="4 4" ifOverflow="extendDomain" />
-        <Scatter data={toPts(selected)} name={`${selectedName} (95% CI)`} fill={C.a}>
+        <Scatter data={toPts(selected)} name={`${selectedName} (95% CI)`} fill={C.a} isAnimationActive={false}>
           <ErrorBar dataKey="err" direction="y" width={4} stroke={C.a} />
         </Scatter>
-        {baseline && <Scatter data={toPts(baseline)} name="expanding-frequency baseline" fill={C.c} />}
+        {baseline && <Scatter data={toPts(baseline)} name="expanding-frequency baseline" fill={C.c} isAnimationActive={false} />}
       </ComposedChart>
     </ResponsiveContainer>
   );

@@ -72,7 +72,8 @@ h3 { font-size: 14px; margin: 16px 0 6px; }
 
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; min-width: 0; }
 .card-head { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; max-width: 100%; }
+.card-actions select { min-width: 0; width: auto; max-width: 100%; }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
 .stat { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; min-width: 0; }
@@ -81,6 +82,7 @@ h3 { font-size: 14px; margin: 16px 0 6px; }
 .stat-hint { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); white-space: nowrap; }
+.stat .badge { white-space: normal; }
 .badge-signal { background: var(--signal-bg); }
 .badge-noedge { background: var(--noedge-bg); }
 .badge-insufficient { background: var(--insufficient-bg); }

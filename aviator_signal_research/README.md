@@ -116,6 +116,11 @@ Only synthetic data have been evaluated (no real data were available). See `repo
 reports **NO DEMONSTRATED EDGE**; on synthetic data with a deliberately planted regime dependence it detects the
 signal. That validates the *framework*. It says nothing about real Aviator rounds.
 
+## Screenshots (synthetic regime demo)
+
+![Overview](docs/screenshots/desktop_overview.png)
+![Model comparison](docs/screenshots/desktop_models.png)
+
 ## Responsible use
 
 This is a research and statistics tool. Crash games are designed with a house edge; under the commonly quoted

@@ -133,6 +133,7 @@ class BacktestEngine:
         resolved_seen: set[str] = set()
         calib_pairs: dict[str, list[tuple[float, int]]] = defaultdict(list)
         ri = 0
+        last_entry: dict[str, datetime] = {}
         while t <= t_end + step:
             # 1) resolutions visible at t
             while ri < len(resolutions) and resolutions[ri][0] <= t:
@@ -194,12 +195,15 @@ class BacktestEngine:
                 if not c.qualified:
                     continue
                 k = c.market.key
+                recent = {kk for kk, ts_ in last_entry.items() if (t - ts_).total_seconds() < limits.reentry_cooldown_s}
                 ctx = RiskContext(mode=TradingMode.PAPER, trading_allowed=True, trading_block_reason="ok", working_order_markets=set(),
-                                  held=held, venue_tradable=True)
+                                  held=held, venue_tradable=True, recent_entries=recent)
                 d = risk.assess(c, _AgedBook(books[k], t), pf, ctx)
                 if not d.approved:
                     continue
                 self._fill(st, c, d, books[k], t)
+                if c.action is Action.BUY:
+                    last_entry[k] = t
                 pf = self._state(st, books, markets, limits)
                 held = {(kk, o): pos.contracts for (kk, o), pos in st.positions.items()}
             eq = pf.equity

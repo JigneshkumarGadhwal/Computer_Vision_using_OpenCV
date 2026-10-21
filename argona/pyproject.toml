@@ -34,6 +34,9 @@ argona = "argona.cli:main"
 [tool.setuptools.packages.find]
 where = ["backend"]
 
+[tool.setuptools.package-data]
+"argona.migrations" = ["script.py.mako", "*.py", "versions/*.py"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"

@@ -1,0 +1,16 @@
+[
+  {"id": "501", "question": "Will Bitcoin be above $120,000 on October 31?", "conditionId": "0xabc", "slug": "btc-above-120k-oct-31",
+   "description": "This market will resolve to \"Yes\" if the Binance 1 minute candle for BTCUSDT 12:00 in the ET timezone on October 31 has a final \"Close\" price higher than 120,000. Otherwise No.",
+   "resolutionSource": "https://www.binance.com/en/trade/BTC_USDT", "endDate": "2099-10-31T16:00:00Z",
+   "outcomes": "[\"Yes\", \"No\"]", "outcomePrices": "[\"0.34\", \"0.66\"]", "clobTokenIds": "[\"111\", \"222\"]",
+   "bestBid": 0.33, "bestAsk": 0.35, "lastTradePrice": 0.34, "volumeNum": 125000.5, "volume24hr": 3400.2, "liquidityNum": 22000,
+   "active": true, "closed": false, "acceptingOrders": true, "enableOrderBook": true, "orderPriceMinTickSize": 0.01, "orderMinSize": 5,
+   "negRisk": false, "groupItemTitle": "120,000", "events": [{"id": 9001, "title": "Bitcoin above ___ on October 31?", "slug": "bitcoin-above-on-october-31"}]},
+  {"id": "502", "question": "Will it rain in Seattle tomorrow?", "conditionId": "0xdef", "description": "", "endDate": "2099-10-22T07:00:00Z",
+   "outcomes": ["Yes", "No"], "outcomePrices": ["0.5", "0.5"], "clobTokenIds": ["333", "444"], "active": true, "closed": false,
+   "enableOrderBook": true, "feesEnabled": true, "feeSchedule": {"rate": "0.02", "exponent": 1, "takerOnly": true, "rebateRate": "0"}},
+  {"id": "503", "question": "Resolved market", "conditionId": "0x1", "description": "rules", "endDate": "2020-01-01T00:00:00Z",
+   "outcomes": "[\"Yes\", \"No\"]", "outcomePrices": "[\"1\", \"0\"]", "clobTokenIds": "[\"555\", \"666\"]", "active": true, "closed": true,
+   "umaResolutionStatus": "resolved"},
+  {"id": "504", "question": "Three-way market", "outcomes": "[\"A\", \"B\", \"C\"]", "clobTokenIds": "[\"1\",\"2\",\"3\"]", "active": true, "closed": false}
+]

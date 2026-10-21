@@ -15,9 +15,11 @@ World model:
 """
 from __future__ import annotations
 
+import json
 import math
 import random
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Callable
 
@@ -77,6 +79,46 @@ class SimWorld:
         self._last = now
         for _ in range(self.n_markets):
             self._spawn(now)
+
+    # ---------- persistence (so SIM positions survive a restart) ----------
+    def save(self, path: Path) -> None:
+        def ser(m: _SimMarket) -> dict:
+            d = asdict(m)
+            for k in ("created", "expiry", "resolved_at"):
+                d[k] = d[k].isoformat() if d[k] else None
+            d["result"] = m.result.value if m.result else None
+            return d
+
+        state = {"spot": self.spot, "counter": self._counter, "last": self._last.isoformat() if self._last else None,
+                 "history": [(t.isoformat(), p) for t, p in self.history[-720:]], "markets": [ser(m) for m in self.markets.values()],
+                 "rng": self.rng.getstate()}
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(state, default=list))
+        tmp.replace(path)
+
+    @classmethod
+    def load(cls, path: Path, *, seed: int, n_markets: int, clock: Callable[[], datetime] = utcnow) -> "SimWorld":
+        from datetime import datetime as _dt
+
+        st = json.loads(path.read_text())
+        w = cls.__new__(cls)
+        w.seed, w.n_markets, w.clock, w.vol = seed, n_markets, clock, 0.60
+        w.rng = random.Random(seed)
+        rs = st.get("rng")
+        if rs:
+            w.rng.setstate((rs[0], tuple(rs[1]), rs[2]))
+        w.spot = float(st["spot"])
+        w._counter = int(st["counter"])
+        w._last = _dt.fromisoformat(st["last"]) if st.get("last") else clock()
+        w.history = [(_dt.fromisoformat(t), float(p)) for t, p in st["history"]]
+        w.markets = {}
+        for d in st["markets"]:
+            for k in ("created", "expiry", "resolved_at"):
+                d[k] = _dt.fromisoformat(d[k]) if d[k] else None
+            d["result"] = Outcome(d["result"]) if d["result"] else None
+            m = _SimMarket(**d)
+            w.markets[m.mid] = m
+        return w
 
     # ---------- dynamics ----------
     def _gbm_step(self, p: float, dt_s: float) -> float:
@@ -198,15 +240,27 @@ class SimMarketData(MarketDataAdapter):
     capabilities = Capabilities(discover_markets=True, market_metadata=True, orderbook=True, batch_orderbook=True,
                                 notes=["SIMULATED venue for paper trading and testing. Never traded live."])
 
-    def __init__(self, world: SimWorld) -> None:
+    def __init__(self, world: SimWorld, state_path: Path | None = None) -> None:
         super().__init__()
         self.world = world
+        self.state_path = state_path
         self.requests = 0
+
+    def persist(self) -> None:
+        if self.state_path:
+            try:
+                self.world.save(self.state_path)
+            except OSError:
+                pass
 
     async def discover(self) -> list[NormalizedMarket]:
         self.requests += 1
         self.world.advance()
+        self.persist()
         return [self.world.normalized(m) for m in self.world.markets.values()]
+
+    async def close(self) -> None:
+        self.persist()
 
     async def fetch_books(self, markets: list[NormalizedMarket]) -> dict[str, OrderBook]:
         self.requests += 1

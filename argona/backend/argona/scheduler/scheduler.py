@@ -101,7 +101,10 @@ class Scheduler:
 
     async def _loop(self, j: Job) -> None:
         if j.initial_delay_s:
-            await asyncio.sleep(j.initial_delay_s)
+            try:  # interruptible, so shutdown never waits on an initial delay
+                await asyncio.wait_for(j.trigger.wait(), timeout=j.initial_delay_s)
+            except asyncio.TimeoutError:
+                pass
         while not self._stopping:
             if j.enabled():
                 await self._execute(j)

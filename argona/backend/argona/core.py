@@ -95,8 +95,8 @@ class Core:
         await self.markets.load_cache()
         await self.load_links()
         await self.recover()
+        self._register_jobs()  # always registered so jobs can be run on demand; the loop is optional
         if run_scheduler:
-            self._register_jobs()
             self.scheduler.start()
         self.started = True
         await self.events.emit("system", f"ARGONA started (mode {self.state.mode.value}, providers {', '.join(self.registry.data)}"

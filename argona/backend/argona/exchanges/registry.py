@@ -46,8 +46,15 @@ class ProviderRegistry:
                 a = KalshiMarketData(settings.kalshi_api_url, max_markets=settings.kalshi_max_markets, series=series,
                                      rps=settings.kalshi_rps, timeout=settings.http_timeout_s, transport=transports.get("kalshi"))
             elif p == "sim":
+                state = settings.data_dir / "sim_world.json"
+                if sim_world is None and state.exists():
+                    try:
+                        sim_world = SimWorld.load(state, seed=settings.sim_seed, n_markets=settings.sim_markets)
+                    except (OSError, ValueError, KeyError, TypeError) as e:
+                        log.warning("SIM state unreadable (%s); starting a fresh simulated world", e)
                 self.sim_world = sim_world or SimWorld(seed=settings.sim_seed, n_markets=settings.sim_markets)
-                a = SimMarketData(self.sim_world)
+                settings.data_dir.mkdir(parents=True, exist_ok=True)
+                a = SimMarketData(self.sim_world, state_path=state)
             else:
                 log.warning("unknown provider %s ignored", p)
                 continue

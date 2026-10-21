@@ -43,6 +43,7 @@ class RiskContext:
     held: dict[tuple[str, str], float]  # (market_key, outcome) -> contracts
     venue_tradable: bool
     venue_reason: str = ""
+    recent_entries: set[str] = field(default_factory=set)  # markets entered within the re-entry cooldown
 
 
 def _round_down(x: float, tick: float) -> float:
@@ -74,6 +75,7 @@ class RiskEngine:
             d.check("daily_loss_limit", pf.day_pnl > -L.max_daily_loss_usd, f"day P&L {pf.day_pnl:.2f} vs limit -{L.max_daily_loss_usd:.2f}")
             d.check("drawdown_limit", pf.drawdown < L.max_drawdown_pct, f"drawdown {pf.drawdown:.1%} vs {L.max_drawdown_pct:.0%}")
             d.check("max_open_orders", pf.open_orders < L.max_open_orders, f"{pf.open_orders} open orders")
+            d.check("reentry_cooldown", m.key not in ctx.recent_entries, f"entered this market within the last {L.reentry_cooldown_s}s")
             opp = ctx.held.get((m.key, c.outcome.other.value), 0.0)
             d.check("no_opposite_position", opp <= 0, f"holding {opp} {c.outcome.other.value} in same market")
         if any(not ch["passed"] for ch in d.checks):

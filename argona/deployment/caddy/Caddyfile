@@ -1,0 +1,10 @@
+# Automatic HTTPS (Let's Encrypt) in front of ARGONA. Requires ARGONA_API_TOKEN to be set.
+{$ARGONA_DOMAIN} {
+	encode gzip
+	reverse_proxy argona:8000 {
+		flush_interval -1   # keep server-sent events streaming
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+	}
+}

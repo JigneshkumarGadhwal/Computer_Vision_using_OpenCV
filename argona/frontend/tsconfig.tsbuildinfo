@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/api.ts","./src/charts.tsx","./src/main.tsx","./src/ui.tsx","./src/pages/Agents.tsx","./src/pages/Backtest.tsx","./src/pages/Health.tsx","./src/pages/Overview.tsx","./src/pages/Portfolio.tsx","./src/pages/Scanner.tsx","./src/pages/Settings.tsx","./src/pages/Spread.tsx"],"version":"5.9.3"}

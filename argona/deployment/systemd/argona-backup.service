@@ -1,0 +1,9 @@
+[Unit]
+Description=ARGONA database backup
+
+[Service]
+Type=oneshot
+User=argona
+WorkingDirectory=/opt/argona
+EnvironmentFile=/opt/argona/.env
+ExecStart=/opt/argona/scripts/backup.sh

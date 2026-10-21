@@ -9,7 +9,7 @@ from typing import AsyncIterator
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
-MIGRATIONS_DIR = Path(__file__).resolve().parents[3] / "migrations"
+MIGRATIONS_DIR = Path(__file__).resolve().parents[1] / "migrations"  # shipped inside the package
 
 
 class Database:

@@ -76,7 +76,7 @@ class Ilsa(Agent):
                 if prev is None or abs(prev - e.q) >= 0.03:
                     self._last_q[key] = e.q
                     await core.events.emit("probability_updated",
-                                           f"P(YES)={e.q:.3f} (mkt {e.market_mid:.3f}, conf {e.confidence:.2f}) via "
+                                           f"P(YES)={e.q:.3f} (mkt {'n/a' if e.market_mid is None else f'{e.market_mid:.3f}'}, conf {e.confidence:.2f}) via "
                                            f"{', '.join(c['model'] for c in e.components if c.get('independent'))}: {snaps[key].market.question[:70]}",
                                            agent=self.name, market_key=key, persist=False,
                                            data={"q": e.q, "mid": e.market_mid, "confidence": e.confidence})

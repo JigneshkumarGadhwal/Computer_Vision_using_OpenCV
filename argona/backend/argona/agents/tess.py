@@ -32,6 +32,7 @@ class Tess(Agent):
                 return []
             await self._limit_alerts(pf)
             working = {o.market_key for o in await core.execution.working_orders(account)}
+            recent = await core.execution.recent_entry_markets(account, core.state.runtime.risk.reentry_cooldown_s)
             held = {(p.market_key, p.outcome): p.contracts for p in pf.positions}
             rows = []
             for c in candidates:
@@ -39,7 +40,7 @@ class Tess(Agent):
                     continue
                 tradable, vreason = core.venue_tradable(c.market, mode)
                 ctx = RiskContext(mode=mode, trading_allowed=allowed, trading_block_reason=why, working_order_markets=working,
-                                  held=held, venue_tradable=tradable, venue_reason=vreason)
+                                  held=held, venue_tradable=tradable, venue_reason=vreason, recent_entries=recent)
                 d = engine.assess(c, books[c.market.key], pf, ctx)
                 oid = opp_ids[id(c)]
                 async with core.db.tx() as s:
@@ -56,6 +57,7 @@ class Tess(Agent):
                 if d.approved:
                     approved.append(RiskVerdict(c, d, oid, ra_id))
                     working.add(c.market.key)
+                    recent.add(c.market.key)
                     await core.events.emit("risk_approved", f"approved {d.contracts:.0f} × {c.outcome.value} ≤{d.limit_price:.3f} "
                                            f"(${d.stake_usd:.2f}, kelly {d.kelly_applied or 0:.3f}): {c.market.question[:70]}",
                                            agent=self.name, market_key=c.market.key, data={"opportunity_id": oid, "checks": d.checks})

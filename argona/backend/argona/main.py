@@ -68,6 +68,8 @@ def create_app(settings: Settings | None = None, *, core: Core | None = None, ru
     app.include_router(public)
     app.include_router(router)
     dist: Path = settings.frontend_dist
+    if not (dist / "index.html").exists() and (Path.cwd() / "frontend" / "dist" / "index.html").exists():
+        dist = Path.cwd() / "frontend" / "dist"
     if dist.exists() and (dist / "index.html").exists():
         app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
 

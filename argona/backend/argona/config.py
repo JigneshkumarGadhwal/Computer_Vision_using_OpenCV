@@ -22,7 +22,7 @@ ALL_CATEGORIES = ["crypto", "weather", "economics", "commodities", "politics", "
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="ARGONA_", env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        env_prefix="ARGONA_", env_file=".env", env_file_encoding="utf-8", extra="ignore", env_ignore_empty=True
     )
 
     # --- application ---
@@ -138,6 +138,7 @@ class RiskLimits(BaseModel):
     max_price: float = Field(0.97, gt=0, le=1)
     slippage_buffer: float = Field(0.005, ge=0, le=0.1, description="Extra per-contract execution cost assumption")
     order_ttl_s: int = Field(300, ge=10)
+    reentry_cooldown_s: int = Field(600, ge=0, description="No new entry in a market within this time of the last one")
     allow_market_orders: bool = False
     market_prior_sigma: float = Field(0.06, ge=0.01, le=0.5,
                                       description="Uncertainty assigned to the market-implied prior (lower = defer more to the market)")

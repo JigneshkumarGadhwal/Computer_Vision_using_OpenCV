@@ -161,15 +161,22 @@ class ExecutionService:
                 fills.append((lvl.price, take))
                 remaining -= take
             acct = await s.get(Account, o.account)
+            filled_now = 0.0
+            rejected = False
             for price, qty in fills:
                 fee = market.fee_model.order_fee(price, qty)
                 if action is Action.BUY and acct and acct.cash < qty * price + fee - 1e-9:
-                    o.status, o.error = OrderStatus.REJECTED.value, "insufficient paper cash"
+                    o.status, o.error, o.reserved = OrderStatus.REJECTED.value, "insufficient paper cash", 0.0
+                    rejected = True
                     break
                 await self.portfolio.apply_fill(s, o, qty, price, fee, f"paper-{uuid.uuid4().hex[:16]}", utcnow(), best_price=best)
-            filled_now = sum(q for _, q in fills)
+                filled_now += qty
             status = o.status
             fill_px = o.avg_fill_price
+        if rejected:
+            self.stats["rejected"] += 1
+            await self.events.emit("order_rejected", f"[PAPER] {o.client_order_id} rejected: insufficient paper cash",
+                                   severity="warning", agent="SPREAD", market_key=o.market_key, data={"order_id": order_id})
         if filled_now > 0:
             self.stats["filled"] += 1 if status == OrderStatus.FILLED.value else 0
             et = "order_filled" if status == OrderStatus.FILLED.value else "order_partially_filled"
@@ -376,6 +383,15 @@ class ExecutionService:
         report["ok"] = not report["issues"]
         report["balance"] = balance
         return report
+
+    async def recent_entry_markets(self, account: str, within_s: int) -> set[str]:
+        if within_s <= 0:
+            return set()
+        since = utcnow() - timedelta(seconds=within_s)
+        async with self.db.session() as s:
+            rows = (await s.execute(select(Order.market_key).where(Order.account == account, Order.action == Action.BUY.value,
+                                                                   Order.created_at >= since, Order.status != OrderStatus.REJECTED.value))).all()
+        return {k for (k,) in rows}
 
     async def working_orders(self, account: str | None = None) -> list[Order]:
         async with self.db.session() as s:

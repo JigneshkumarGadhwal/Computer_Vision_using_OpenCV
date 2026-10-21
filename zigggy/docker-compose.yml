@@ -1,0 +1,60 @@
+# ZigGgy - default: single container + SQLite on a named volume, dashboard on 127.0.0.1:8000.
+#   docker compose up -d --build
+# Optional PostgreSQL:   docker compose --profile postgres up -d   (and set ZIGGGY_DATABASE_URL in .env)
+# Optional HTTPS proxy:  docker compose --profile https up -d      (set ZIGGGY_DOMAIN in .env)
+services:
+  zigggy:
+    build: .
+    image: zigggy:latest
+    env_file: .env
+    environment:
+      ZIGGGY_HOST: 0.0.0.0          # inside the container; the port is published on loopback only
+      ZIGGGY_DATA_DIR: /data
+    ports:
+      - "127.0.0.1:${ZIGGGY_PUBLISH_PORT:-8000}:8000"
+    volumes:
+      - zigggy-data:/data
+      - ./secrets:/secrets:ro       # put exchange private-key files here (never commit them)
+    restart: unless-stopped
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  postgres:
+    profiles: ["postgres"]
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: zigggy
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: zigggy
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zigggy"]
+      interval: 10s
+      retries: 5
+
+  caddy:
+    profiles: ["https"]
+    image: caddy:2-alpine
+    ports: ["80:80", "443:443"]
+    environment:
+      ZIGGGY_DOMAIN: ${ZIGGGY_DOMAIN:-localhost}
+    volumes:
+      - ./deployment/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    restart: unless-stopped
+    depends_on: [zigggy]
+
+volumes:
+  zigggy-data:
+  pg-data:
+  caddy-data:

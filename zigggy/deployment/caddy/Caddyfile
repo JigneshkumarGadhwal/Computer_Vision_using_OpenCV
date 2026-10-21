@@ -1,0 +1,10 @@
+# Automatic HTTPS (Let's Encrypt) in front of ZigGgy. Requires ZIGGGY_API_TOKEN to be set.
+{$ZIGGGY_DOMAIN} {
+	encode gzip
+	reverse_proxy zigggy:8000 {
+		flush_interval -1   # keep server-sent events streaming
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+	}
+}

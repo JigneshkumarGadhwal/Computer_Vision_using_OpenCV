@@ -1,0 +1,9 @@
+[Unit]
+Description=ZigGgy database backup
+
+[Service]
+Type=oneshot
+User=zigggy
+WorkingDirectory=/opt/zigggy
+EnvironmentFile=/opt/zigggy/.env
+ExecStart=/opt/zigggy/scripts/backup.sh

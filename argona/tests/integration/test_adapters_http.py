@@ -172,3 +172,26 @@ async def test_one_failing_venue_does_not_block_discovery(settings):
         assert core.registry.status["polymarket"].connected is False and core.registry.status["sim"].connected is True
     finally:
         await core.stop()
+
+
+async def test_discovery_fallbacks_when_params_rejected():
+    rows = json.loads((FIX / "polymarket_markets.json").read_text())
+
+    def gamma(req):
+        if "order" in req.url.params:
+            return httpx.Response(422, json={"error": "unknown param"})
+        return httpx.Response(200, json=rows if int(req.url.params.get("offset", 0)) == 0 else [])
+
+    pm = PolymarketMarketData("https://g.test", "https://c.test", transport=httpx.MockTransport(gamma), rps=1000)
+    assert len(await pm.discover()) == 3 and pm._ordered is False
+    await pm.close()
+    ev = json.loads((FIX / "kalshi_events.json").read_text())["events"][0]
+
+    def kalshi(req):
+        if req.url.path.endswith("/events"):
+            return httpx.Response(400, json={"error": "bad request"})
+        return httpx.Response(200, json={"markets": ev["markets"], "cursor": ""})
+
+    k = KalshiMarketData("https://k.test/trade-api/v2", transport=httpx.MockTransport(kalshi), rps=1000)
+    assert len(await k.discover()) == 2
+    await k.close()

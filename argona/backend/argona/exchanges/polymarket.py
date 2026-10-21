@@ -149,14 +149,23 @@ class PolymarketMarketData(MarketDataAdapter):
         self.http_clients += [self.gamma, self.clob]
         self.max_markets = max_markets
         self._batch_ok = True
+        self._ordered = True
 
     async def discover(self) -> list[NormalizedMarket]:
         out: list[NormalizedMarket] = []
         offset, page = 0, 500
         while len(out) < self.max_markets:
-            params = {"active": "true", "closed": "false", "limit": page, "offset": offset,
-                      "order": "volume24hr", "ascending": "false"}
-            data = await self.gamma.request("GET", "/markets", params=params)
+            params: dict[str, Any] = {"active": "true", "closed": "false", "limit": page, "offset": offset}
+            if self._ordered:
+                params.update(order="volume24hr", ascending="false")
+            try:
+                data = await self.gamma.request("GET", "/markets", params=params)
+            except ProviderError as e:
+                if self._ordered and "HTTP 4" in str(e):  # ordering parameter not accepted -> plain listing
+                    log.info("gamma rejected ordering params (%s); retrying without", e)
+                    self._ordered = False
+                    continue
+                raise
             rows = data if isinstance(data, list) else (data or {}).get("data") or []
             for m in rows:
                 if m.get("enableOrderBook") is False:

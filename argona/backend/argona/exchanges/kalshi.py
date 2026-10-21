@@ -200,6 +200,32 @@ class KalshiMarketData(MarketDataAdapter):
         return await self.http.request("GET", "/events", params=params) or {}
 
     async def discover(self) -> list[NormalizedMarket]:
+        try:
+            return await self._discover_events()
+        except ProviderError as e:
+            if "HTTP 4" not in str(e):
+                raise
+            log.info("kalshi /events listing rejected (%s); falling back to /markets", e)
+            return await self._discover_markets()
+
+    async def _discover_markets(self) -> list[NormalizedMarket]:
+        out: list[NormalizedMarket] = []
+        cursor = None
+        while len(out) < self.max_markets:
+            params: dict[str, Any] = {"status": "open", "limit": 1000, "mve_filter": "exclude"}
+            if cursor:
+                params["cursor"] = cursor
+            page = await self.http.request("GET", "/markets", params=params) or {}
+            for m in page.get("markets") or []:
+                nm = normalize_market(m, {"event_ticker": m.get("event_ticker")})
+                if nm:
+                    out.append(nm)
+            cursor = page.get("cursor")
+            if not cursor or not page.get("markets"):
+                break
+        return out[: self.max_markets]
+
+    async def _discover_events(self) -> list[NormalizedMarket]:
         out: list[NormalizedMarket] = []
         for series in (self.series or [None]):
             cursor = None
@@ -411,7 +437,7 @@ class KalshiTrading(TradingAdapter):
         return out
 
     async def get_positions(self) -> list[VenuePosition]:
-        d = await self._req("GET", "/portfolio/positions", params={"limit": 1000, "count_filter": "position"}) or {}
+        d = await self._req("GET", "/portfolio/positions", params={"limit": 1000}) or {}
         out = []
         for p in d.get("market_positions") or []:
             pos = to_float(p.get("position_fp"), None)

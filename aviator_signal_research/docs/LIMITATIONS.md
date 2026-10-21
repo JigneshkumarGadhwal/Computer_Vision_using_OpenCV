@@ -8,8 +8,8 @@
 * **The generation mechanism is verified for the demo server only.** The 97% RTP is stated on spribe.co, and the
   seed→multiplier formula was reconstructed and reproduced exactly on 16 published demo rounds (METHODOLOGY §3).
   Real-money operators may configure a different RTP, and pre-round server-seed commitments are not yet recorded,
-  so "the server seed was fixed before the round" is documented but not independently checked here. The reference distribution `P(X≥m)=RTP/m` is a hypothesis, not a fact,
-  and other "Aviator"-branded games may differ.
+  so "the server seed was fixed before the round" is documented but not independently checked here. Other
+  "Aviator"-branded games may use different software.
 * **A statistical anomaly is not an edge.** Dependence tests in the History page can be significant without any
   model improving out-of-sample probabilities enough to matter, and a better Brier score need not survive the
   house edge.

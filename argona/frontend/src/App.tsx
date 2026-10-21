@@ -59,7 +59,7 @@ export default function App() {
     return () => window.removeEventListener("argona:auth", f);
   }, []);
   const ov = usePoll<any>(needAuth ? null : "/overview", 4000, [authNonce]);
-  const stream = useEventStream();
+  const stream = useEventStream(needAuth ? null : authNonce);
   if (needAuth) return <Login onDone={() => { setNeedAuth(false); setAuthNonce((n) => n + 1); }} />;
   const o = ov.data;
   const pf = o?.portfolio;

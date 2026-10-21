@@ -26,7 +26,7 @@ cd Computer_Vision_using_OpenCV/argona
 ./scripts/start.sh            # API + dashboard + scheduler in the foreground (Ctrl+C = safe shutdown)
 ```
 
-Open **http://127.0.0.1:8000**. The token is printed as `ARGONA_API_TOKEN` in `.env`. The dashboard only asks for it when you connect from another machine.
+Open **http://127.0.0.1:8000** and paste the API token (`ARGONA_API_TOKEN` in `.env`) when the dashboard asks for it. It is stored only in that browser. Without a token configured, ARGONA serves loopback clients only.
 
 **Try it without any network access to the venues:** set `ARGONA_PROVIDERS=polymarket,kalshi,sim` (or just `sim`) in `.env`. The SIM venue is a clearly labelled simulated market with simulated evidence feeds. It exercises the full lifecycle, from discovery through fills to settlement, within about an hour.
 

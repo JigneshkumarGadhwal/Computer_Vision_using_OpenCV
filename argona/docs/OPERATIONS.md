@@ -82,7 +82,7 @@ ARGONA_TEST_DATABASE_URL=postgresql+asyncpg://user@host:5432/argona_test .venv/b
 
 ## C. First launch
 
-1. **Open the dashboard** at http://127.0.0.1:8000. From another machine, use an SSH tunnel (`ssh -L 8000:127.0.0.1:8000 you@server`) or the HTTPS proxy ([F6](#f6-https-and-authentication)), and enter the token from `.env`.
+1. **Open the dashboard** at http://127.0.0.1:8000 and enter the token from `.env` (`ARGONA_API_TOKEN`) once per browser. From another machine, use an SSH tunnel (`ssh -L 8000:127.0.0.1:8000 you@server`) or the HTTPS proxy ([F6](#f6-https-and-authentication)).
 2. **Backend health:** `curl -s http://127.0.0.1:8000/api/health` returns `{"status":"ok","db":true,"scheduler_running":true,...}`. Then open **Diagnostics** and confirm every scheduler job shows `ok`.
 3. **Confirm market data is live:** in **Diagnostics → Market-data connectivity**, Polymarket and Kalshi should show `connected=yes`, a market count and a recent *Last sync*. In the **Scanner**, the *Fresh* column shows book age in seconds (red above the staleness limit). Real venues have no SIM badge. Anything simulated carries a violet **SIM** badge.
 4. **Agent status:** **Agents** shows each agent's last run, decisions, API calls, errors and recent findings. The **Overview** shows a compact version.

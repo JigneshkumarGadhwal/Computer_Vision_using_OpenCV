@@ -86,11 +86,13 @@ export type ArgonaEvent = {
   data?: any;
 };
 
-/** Live activity: initial page from /api/events, then server-sent events. */
-export function useEventStream(max = 400) {
+/** Live activity: initial page from /api/events, then server-sent events.
+ *  `session` = null while unauthenticated; changing it (e.g. after login) reopens the stream with the new token. */
+export function useEventStream(session: number | null, max = 400) {
   const [events, setEvents] = useState<ArgonaEvent[]>([]);
   const [connected, setConnected] = useState(false);
   useEffect(() => {
+    if (session === null) return;
     let es: EventSource | null = null;
     let closed = false;
     api<ArgonaEvent[]>(`/events?limit=150`).then((e) => !closed && setEvents(e)).catch(() => {});
@@ -102,14 +104,19 @@ export function useEventStream(max = 400) {
         setEvents((prev) => [ev, ...prev].slice(0, max));
       });
       es.onopen = () => setConnected(true);
-      es.onerror = () => setConnected(false);
+      es.onerror = () => {
+        setConnected(false);
+        // a 401 closes the stream for good; probe once so the app can show the login form
+        if (es?.readyState === EventSource.CLOSED) api("/overview").catch(() => {});
+      };
     };
     open();
     return () => {
       closed = true;
       es?.close();
+      setConnected(false);
     };
-  }, [max]);
+  }, [max, session]);
   return { events, connected };
 }
 

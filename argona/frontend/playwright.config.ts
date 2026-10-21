@@ -11,8 +11,9 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${PORT}`,
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : {},
   },
-  // Boots a real backend on the SIM venue (simulated data) with an isolated database.
-  webServer: {
+  // Boots real backends on the SIM venue (simulated data) with isolated databases:
+  // one open on loopback (no token) and one requiring a bearer token.
+  webServer: [{
     command: `.venv/bin/argona serve`,
     cwd: "..",
     url: `http://127.0.0.1:${PORT}/api/health`,
@@ -20,5 +21,13 @@ export default defineConfig({
     timeout: 60_000,
     env: { ARGONA_PROVIDERS: "sim", ARGONA_PORT: String(PORT), ARGONA_DATA_DIR: DATA, ARGONA_SCAN_INTERVAL_S: "5",
            ARGONA_LOG_JSON: "false", ARGONA_LOG_LEVEL: "WARNING" },
-  },
+  }, {
+    command: `.venv/bin/argona serve`,
+    cwd: "..",
+    url: `http://127.0.0.1:${PORT + 1}/api/health`,
+    reuseExistingServer: false,
+    timeout: 60_000,
+    env: { ARGONA_PROVIDERS: "sim", ARGONA_PORT: String(PORT + 1), ARGONA_DATA_DIR: `${DATA}-auth`, ARGONA_API_TOKEN: "e2e-token",
+           ARGONA_LOG_JSON: "false", ARGONA_LOG_LEVEL: "WARNING" },
+  }],
 });

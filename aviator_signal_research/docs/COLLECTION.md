@@ -43,6 +43,8 @@ python scripts/research_cli.py collect-docs https://spribe.co/games/aviator
 
 ```bash
 python scripts/research_cli.py observe <public game page URL> --source spribe-demo-observed --minutes 60
+# or, with the documented Spribe demo URL (the site asks you to confirm you are of legal age):
+python scripts/research_cli.py observe --profile spribe --confirm-legal-age --source spribe-demo-observed --minutes 60
 ```
 
 * Checks robots.txt, opens the page once, then reads the **already-loaded DOM, including iframes**, every
@@ -79,7 +81,12 @@ python scripts/research_cli.py observe <public game page URL> --source spribe-de
 | JS-only page → rendered fallback | pass |
 | Live observer, game in an iframe fed by a real WebSocket server: observed rounds equal the exact server sequence, in order, no gaps; WebSocket frames logged; ingestion into DB as `public_observation` | pass |
 | Observer stops on CAPTCHA page and on robots.txt disallow | pass |
-| **Real target `https://spribe.co/games/aviator`** | **not reachable**: the environment's network policy refuses the host (proxy `CONNECT` 403). Both `collect-docs` and `observe` report `network_blocked` and exit with code 2 |
+| **Real target `https://spribe.co/games/aviator`** (after `spribe.co` was allowed) | **collected** (rendered; Angular app). Official text: *"Return to Player (RTP) 97%"*, game type *Mini Game*, devices *Desktop, Tablet, Mobile*. No provably-fair formula or round history is published on the page. `robots.txt` is not a real robots file (the app returns its HTML for every path) → no crawl rules |
+| Demo game URL | found in spribe.co's public JS bundle: `https://demo.spribe.io/launch/aviator?currency=USD&lang=EN&return_url=https://spribe.co/games`, opened by script after an **"I'm over 18"** confirmation → stored in `app/collectors/profiles.py`; `observe --profile spribe` requires `--confirm-legal-age` |
+| **Demo host `demo.spribe.io`** | **not reachable**: `spribe.io` is a different domain and is still refused by the network policy (`network_blocked`) |
+
+Fixes made after running against the real site: label/value pairs (`<p>Return to Player (RTP)</p><h5>97%</h5>`)
+are now paired; buttons that open links by script are recorded.
 
 Two bugs found while building this were fixed:
 * `add_single_round` gave every manual/live round after the first sequence 0 (regression test added).

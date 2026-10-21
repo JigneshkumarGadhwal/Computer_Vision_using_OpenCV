@@ -29,7 +29,7 @@ def reference_dir() -> Path:
     return Path(os.environ.get("AVR_REFERENCE_DIR", str(PROJECT_ROOT / "data" / "reference")))
 
 
-BLOCK_TAGS = "h1, h2, h3, h4, p, li, td, th, dt, dd, blockquote, summary"
+BLOCK_TAGS = "h1, h2, h3, h4, h5, h6, p, li, td, th, dt, dd, label, blockquote, summary"
 MIN_STATIC_TEXT = 400  # below this, the page is probably rendered client-side
 
 RTP_RE = re.compile(r"(\d{2}(?:[.,]\d{1,2})?)\s?%")
@@ -73,6 +73,10 @@ def extract_links(html: str, url: str) -> list[dict]:
         if (LINK_RE.search(href) or LINK_RE.search(text)) and absolute not in seen:
             seen.add(absolute)
             out.append({"url": absolute, "text": text[:120]})
+    for el in sel.css("a:not([href]), button"):
+        text = _norm(el.get_all_text(separator=" ", strip=True))
+        if text and LINK_RE.search(text) and not any(o["text"] == text for o in out):
+            out.append({"url": None, "text": text[:120], "note": "opened by script (no href)"})
     for fr in sel.css("iframe[src]"):
         absolute = urljoin(url, fr.attrib.get("src"))
         if absolute not in seen:
@@ -81,23 +85,36 @@ def extract_links(html: str, url: str) -> list[dict]:
     return out
 
 
+def _rtp_values(text: str) -> list[float]:
+    return [float(v.replace(",", ".")) for v in RTP_RE.findall(text) if 80 <= float(v.replace(",", ".")) <= 100]
+
+
+def _mult_values(text: str) -> list[float]:
+    return [v for v in (float(x.replace(",", "").replace(" ", "")) for x in MULT_RE.findall(text)) if v >= 2]
+
+
 def extract_facts(blocks: list[str]) -> dict:
+    """Keyword-anchored facts. A label block without a value (e.g. ``<p>Return to
+    Player (RTP)</p><h5>97%</h5>``) is paired with the short block that follows it."""
     facts: dict = {k: [] for k in KEYWORDS}
-    for b in blocks:
+    for i, b in enumerate(blocks):
+        nxt = blocks[i + 1] if i + 1 < len(blocks) and len(blocks[i + 1]) <= 40 else ""
         for key, kw in KEYWORDS.items():
             if not kw.search(b):
                 continue
             entry: dict = {"excerpt": b[:400]}
             if key == "rtp":
-                entry["values_percent"] = [float(v.replace(",", ".")) for v in RTP_RE.findall(b)
-                                           if 80 <= float(v.replace(",", ".")) <= 100]
-                if not entry["values_percent"]:
+                vals = _rtp_values(b) or _rtp_values(nxt)
+                if not vals:
                     continue
+                entry["values_percent"] = vals
+                if not _rtp_values(b):
+                    entry["excerpt"] = f"{b} {nxt}"[:400]
             if key == "max_multiplier":
-                vals = [float(v.replace(",", "").replace(" ", "")) for v in MULT_RE.findall(b)]
-                entry["values_x"] = [v for v in vals if v >= 2]
-                if not entry["values_x"]:
+                vals = _mult_values(b) or _mult_values(nxt)
+                if not vals:
                     continue
+                entry["values_x"] = vals
             facts[key].append(entry)
     for key in facts:
         facts[key] = facts[key][:8]

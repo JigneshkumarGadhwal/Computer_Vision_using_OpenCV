@@ -1,0 +1,45 @@
+{
+  "source_url": "https://spribe.co/games/aviator",
+  "final_url": "https://spribe.co/games/aviator",
+  "fetched_at": "2026-10-21T17:42:56.682891+00:00",
+  "http_status": 200,
+  "method": "rendered",
+  "sha256": "0f2bf496c2c69b89544e03e786c2d4e97fe5f18b227b22d5622a9f7d56fc07b9",
+  "title": "SPRIBE • INNOVATIVE CASINO GAMES",
+  "facts": {
+    "rtp": [
+      {
+        "excerpt": "Return to Player (RTP) 97%",
+        "values_percent": [
+          97.0
+        ]
+      }
+    ],
+    "max_multiplier": [],
+    "limits": [],
+    "provably_fair": [],
+    "rules": [
+      {
+        "excerpt": "Aviator is a new kind of social multiplayer game consisting of an increasing curve that can crash anytime. When round starts, a scale of multiplier starts growing. Player must cash out before lucky plane flies away."
+      }
+    ],
+    "summary": {
+      "rtp_percent_candidates": [
+        97.0
+      ],
+      "max_multiplier_candidates": [],
+      "mentions_provably_fair": false
+    }
+  },
+  "links": [
+    {
+      "url": null,
+      "text": "Play Demo",
+      "note": "opened by script (no href)"
+    }
+  ],
+  "n_text_blocks": 54,
+  "text": "Games\nEngagement\nNews\nBlog\nAbout\nManagement\nVacancies\nContact\nClient area\nAPI documentation\nHome\nAviator\nAviator is a new kind of social multiplayer game consisting of an increasing curve that can crash anytime. When round starts, a scale of multiplier starts growing. Player must cash out before lucky plane flies away.\nOriginated from video gaming industry, this format became popular in crypto casinos, due to its simplicity and exciting gambling experience.\nWe are amongst pioneers to introduce this game to regular online casinos.\nGame Type\nMini Game\nReturn to Player (RTP)\n97%\nDevices\nDesktop, Tablet, Mobile\nOn the Rise\nOne of best performing games on every casino it launched\nLight\nBuild to work with budget devices in low bandwidth environment\nAdaptive\nAll of our games provide superb experience on all devices\nEngaging & Social\nAviator is not like other casino games. It introduces social elements and turns players into part of comunity.\nIn-game Chat\nIn-game chat is a great tool for creating game community with loyal players.\nIts also new layer of communication and marketing medium for casino.\nLive Bets\nEveryone can see how much other players are betting and winning.\nLive Statistics\nIn-game statistics module with biggest and hugest wins presented as daily, monthy or all time leaderboard.\nPromo Tools\nRain Promo\nThis special promo feature adds amount of free bets into chat, at random times. Any player can claim these free bets by tapping on “claim” button.\nThis is promo feature with goal to increase chat interaction and player time in game.\nFree Bets\nFree bets are the best way to introduce game to your customers or just use as a gift in random promotions and giveaways.\nWrite us now to get your offer!\nOther Games\nHiLo\nGoal\nMines\nDice\nLet’s keep in touch\nGet occasional product launch or event emails\nAll games are hosted on Amazon Web Services\nLinkedin\nFacebook\nThis website uses cookies to ensure you get the best experience on our website. Learn more",
+  "context": "Source: https://spribe.co/games/aviator (fetched 2026-10-21T17:42:56.682891+00:00, sha256 0f2bf496c2c6)\nTitle: SPRIBE • INNOVATIVE CASINO GAMES\nRTP candidates (%): [97.0]\nMax multiplier candidates (x): none found\nProvably-fair description present: False\n[rtp] Return to Player (RTP) 97%\n[rules] Aviator is a new kind of social multiplayer game consisting of an increasing curve that can crash anytime. When round starts, a scale of multiplier starts growing. Player must cash out before lucky plane flies away.",
+  "unchanged": false
+}

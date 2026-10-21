@@ -132,6 +132,17 @@ def observe_cmd(args) -> None:
     from app.collectors.policy import AccessPolicy
 
     init_engine()
+    if not args.url and not args.profile:
+        raise SystemExit("give a URL or --profile")
+    if args.profile:
+        from app.collectors.profiles import PROFILES, demo_url
+
+        prof = PROFILES[args.profile]
+        if prof.get("age_gate") and not args.confirm_legal_age:
+            raise SystemExit(f"The {args.profile} site asks visitors to confirm they are of legal age before opening "
+                             "the demo. Re-run with --confirm-legal-age only if that applies to you.")
+        args.url = args.url or demo_url(args.profile, args.game)
+        print(f"observing {args.url}")
     res = observe(args.url, args.source, minutes=args.minutes, poll_s=args.poll, max_rounds=args.max_rounds,
                   selector=args.selector, newest_first=not args.oldest_first,
                   policy=AccessPolicy(min_interval_s=args.interval),
@@ -169,7 +180,11 @@ def main() -> None:
     c.add_argument("--interval", type=float, default=5.0, help="min seconds between requests per host")
     c.set_defaults(fn=collect_docs)
     o = sub.add_parser("observe", help="record completed rounds from a public game page")
-    o.add_argument("url")
+    o.add_argument("url", nargs="?", help="public game page; or use --profile")
+    o.add_argument("--profile", choices=["spribe"], default=None, help="use the documented demo URL of a site profile")
+    o.add_argument("--game", default="aviator")
+    o.add_argument("--confirm-legal-age", action="store_true",
+                   help="you confirm you are of legal age (the site shows an age check before its demo)")
     o.add_argument("--source", required=True, help="data source name (kind public_observation)")
     o.add_argument("--minutes", type=float, default=30)
     o.add_argument("--poll", type=float, default=2.0, help="seconds between DOM reads (no extra requests)")

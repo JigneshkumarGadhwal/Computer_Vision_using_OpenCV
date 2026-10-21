@@ -32,12 +32,12 @@ Threshold prediction and exact-multiplier estimation are evaluated separately an
 
 Secondhand descriptions of Spribe's Aviator describe a commit–reveal "provably fair" scheme: a hash of the server
 seed is published before the round, client seeds come from the first bettors, and the multiplier is derived from a
-SHA-512 hash of the combined seeds. The exact formula and the RTP (commonly quoted as 97%) were **not verified from
-primary documentation** for this project. Other sites using the "Aviator" name may run different software.
+SHA-512 hash of the combined seeds. Spribe's official game page states an **RTP of 97%** (collected 2026-10-21 with
+`collect-docs`); the exact seed→multiplier formula is **not published there** and remains unverified. Other sites using the "Aviator" name may run different software.
 
 Consequently:
 
-* The reference distribution `P(X ≥ m) = RTP / m` (default RTP 0.97) is used only as a *reference hypothesis* for
+* The reference distribution `P(X ≥ m) = RTP / m` (default RTP 0.97, the officially stated RTP) is used only as a *reference hypothesis* for
   goodness-of-fit and as one comparison baseline. It is configurable (`AVR_REFERENCE_RTP`).
 * The fairness audit checks only what is generic: whether a revealed server seed hashes (SHA-256/512) to its
   pre-round commitment. A platform-specific seed→multiplier derivation can be registered once verified

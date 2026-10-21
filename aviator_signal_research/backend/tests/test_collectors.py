@@ -60,6 +60,25 @@ def test_reference_extraction_is_compact_and_sourced(site, policy, tmp_path):
     assert again["unchanged"] and len(list(tmp_path.glob("*.json"))) == 1
 
 
+def test_label_value_pairs_and_script_buttons():
+    from app.collectors.reference import extract_facts, extract_links
+
+    # Structure observed on spribe.co/games/aviator (2026-10-21): label <p>, value <h5>
+    f = extract_facts(["Game Type", "Mini Game", "Return to Player (RTP)", "97%", "Devices", "Desktop, Tablet, Mobile"])
+    assert f["summary"]["rtp_percent_candidates"] == [97.0]
+    assert f["rtp"][0]["excerpt"] == "Return to Player (RTP) 97%"
+    assert extract_facts(["Return to Player (RTP)", "Desktop, Tablet, Mobile"])["summary"]["rtp_percent_candidates"] == []
+    links = extract_links('<a class="demo-link">Play Demo</a><button>Subscribe</button><a href="/x">x</a>', "https://e.test/")
+    assert links == [{"url": None, "text": "Play Demo", "note": "opened by script (no href)"}]
+
+
+def test_profile_demo_url():
+    from app.collectors.profiles import demo_url
+
+    assert demo_url("spribe", "aviator") == (
+        "https://demo.spribe.io/launch/aviator?currency=USD&lang=EN&return_url=https://spribe.co/games")
+
+
 def test_collect_many_follows_only_documentation_links(site, policy, tmp_path):
     out = collect_many([f"{site.base}/games/crash"], policy, render="never", out_dir=tmp_path)
     got = [d["final_url"] for d in out["documents"]]

@@ -6,6 +6,8 @@ Examples (run from the project root):
     python scripts/research_cli.py evaluate --source my-export
     python scripts/research_cli.py backtest --run 1 --threshold 2
     python scripts/research_cli.py demo-report                     # synthetic end-to-end, writes reports/
+    python scripts/research_cli.py collect-docs https://spribe.co/games/aviator
+    python scripts/research_cli.py observe URL --source spribe-demo --minutes 60
 """
 from __future__ import annotations
 
@@ -106,6 +108,39 @@ def demo_report(_args) -> None:
                 print("report:", write_report(s, run))
 
 
+def collect_docs(args) -> None:
+    from app.collectors.policy import AccessPolicy
+    from app.collectors.reference import collect_many
+
+    out = collect_many(args.urls, AccessPolicy(min_interval_s=args.interval), render=args.render,
+                       follow_doc_links=not args.no_follow, max_pages=args.max_pages)
+    for d in out["documents"]:
+        print(f"[{d['method']}] {d['final_url']}  ({'unchanged' if d['unchanged'] else 'stored'}: {d['stored_at']})")
+        print(f"   summary: {d['summary']}")
+        for link in d["links"][:10]:
+            print(f"   link: {link['url']}  {link['text']}")
+    for e in out["errors"]:
+        print(f"ERROR {e['reason']}: {e['message']}")
+    if out["context"]:
+        print("\n--- context ---\n" + out["context"])
+    if out["errors"] and not out["documents"]:
+        raise SystemExit(2)
+
+
+def observe_cmd(args) -> None:
+    from app.collectors.observer import observe
+    from app.collectors.policy import AccessPolicy
+
+    init_engine()
+    res = observe(args.url, args.source, minutes=args.minutes, poll_s=args.poll, max_rounds=args.max_rounds,
+                  selector=args.selector, newest_first=not args.oldest_first,
+                  policy=AccessPolicy(min_interval_s=args.interval),
+                  raw_dir=ROOT / "data" / "raw" / "observations", log_websockets=not args.no_ws)
+    print(json.dumps(res.to_dict(), indent=2))
+    if res.rounds_ingested == 0 and res.errors:
+        raise SystemExit(2)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -126,6 +161,24 @@ def main() -> None:
     b.add_argument("--stake", type=float, default=1.0)
     b.set_defaults(fn=do_backtest)
     sub.add_parser("demo-report").set_defaults(fn=demo_report)
+    c = sub.add_parser("collect-docs", help="collect official game documentation (robots.txt obeyed)")
+    c.add_argument("urls", nargs="+")
+    c.add_argument("--render", choices=["auto", "never", "always"], default="auto")
+    c.add_argument("--no-follow", action="store_true", help="do not follow same-site rules/fairness links")
+    c.add_argument("--max-pages", type=int, default=6)
+    c.add_argument("--interval", type=float, default=5.0, help="min seconds between requests per host")
+    c.set_defaults(fn=collect_docs)
+    o = sub.add_parser("observe", help="record completed rounds from a public game page")
+    o.add_argument("url")
+    o.add_argument("--source", required=True, help="data source name (kind public_observation)")
+    o.add_argument("--minutes", type=float, default=30)
+    o.add_argument("--poll", type=float, default=2.0, help="seconds between DOM reads (no extra requests)")
+    o.add_argument("--max-rounds", type=int, default=None)
+    o.add_argument("--selector", default=None, help="CSS for history items if auto-detection picks the wrong list")
+    o.add_argument("--oldest-first", action="store_true", help="history bar lists the oldest round first")
+    o.add_argument("--interval", type=float, default=5.0)
+    o.add_argument("--no-ws", action="store_true", help="do not log WebSocket frames")
+    o.set_defaults(fn=observe_cmd)
     args = p.parse_args()
     args.fn(args)
 

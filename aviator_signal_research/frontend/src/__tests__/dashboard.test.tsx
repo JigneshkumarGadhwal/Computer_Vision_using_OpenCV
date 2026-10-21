@@ -98,3 +98,23 @@ describe("Signals page", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("source 3 not found");
   });
 });
+
+describe("Reference documentation collector", () => {
+  it("shows the collector's network_blocked reason instead of fake results", async () => {
+    const { default: ImportPage } = await import("../pages/Import");
+    mockFetch((url, init) => {
+      if (url.endsWith("/api/reference/collect") && init?.method === "POST")
+        return { body: { documents: [], errors: [{ reason: "network_blocked", message: "cannot reach https://spribe.co: outbound proxy refused the connection", url: "https://spribe.co/robots.txt" }], context: "" } };
+      if (url.endsWith("/api/reference")) return { body: [] };
+      return { body: [] };
+    });
+    const ctx: Ctx = { source: null, sources: [], setSourceId: () => {}, reloadSources: () => {} };
+    render(<ImportPage ctx={ctx} />);
+    expect(await screen.findByText("No documentation collected yet.")).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByText("Collect"));
+    });
+    expect(await screen.findByText("network_blocked")).toBeInTheDocument();
+    expect(screen.getByText(/outbound proxy refused/)).toBeInTheDocument();
+  });
+});

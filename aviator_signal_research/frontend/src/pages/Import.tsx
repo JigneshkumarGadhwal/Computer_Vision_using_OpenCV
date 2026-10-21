@@ -102,6 +102,8 @@ export default function ImportPage({ ctx }: { ctx: Ctx }) {
         </div>
       </Card>
 
+      <ReferenceCollector />
+
       {ctx.source && (
         <Card title={`Data-quality history — ${ctx.source.name}`}>
           <Async state={quality} isEmpty={(q) => !q.jobs.length} empty="No import jobs for this source (manual / live entries only).">
@@ -146,6 +148,57 @@ function QualityReport({ title, report }: { title: string; report: Json }) {
             rows={report.preview.map((r: Json) => [r.row_number, r.round_id ?? "—", fmt(r.multiplier, 2), r.timestamp ?? "—", r.status, r.flags.join(", ")])} />
         </>
       )}
+    </Card>
+  );
+}
+
+function ReferenceCollector() {
+  const [url, setUrl] = useState("https://spribe.co/games/aviator");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<Json | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const stored = useApi<Json[]>("/api/reference");
+  const collect = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      setResult(await apiPost("/api/reference/collect", { urls: [url], render: "auto" }));
+      stored.reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Card title="Collect official game documentation">
+      <p className="muted">
+        Fetches rules / RTP / provably-fair pages so the assumptions used in the analysis can be checked against the
+        operator&apos;s own wording. robots.txt is obeyed, requests are rate-limited, and collection stops on CAPTCHA or
+        anti-bot pages (never bypassed). Extracted values are candidates only — nothing changes automatically.
+        Live rounds from a public game page are recorded with the CLI: <code>research_cli.py observe URL --source NAME</code>.
+      </p>
+      <div className="form-row">
+        <label>Page URL<input aria-label="Documentation URL" value={url} onChange={(e) => setUrl(e.target.value)} /></label>
+      </div>
+      <div className="btn-row"><button disabled={busy || !url} onClick={collect}>{busy ? "Collecting…" : "Collect"}</button></div>
+      {error && <div className="state state-error" role="alert">{error}</div>}
+      {result?.errors?.map((e: Json) => (
+        <div key={e.message} className="state state-error" role="alert"><b>{e.reason}</b>: {e.message}</div>
+      ))}
+      <Async state={stored} isEmpty={(d) => !d.length} empty="No documentation collected yet.">
+        {(docs) => (
+          <Table head={["Page", "Fetched", "Method", "RTP candidates", "Max multiplier", "Provably fair text", "Key links"]}
+            rows={docs.map((d: Json) => [
+              <a key="u" href={d.final_url} target="_blank" rel="noreferrer">{d.title || d.final_url}</a>,
+              d.fetched_at?.slice(0, 16), d.method,
+              d.summary?.rtp_percent_candidates?.join(", ") || "—",
+              d.summary?.max_multiplier_candidates?.join(", ") || "—",
+              d.summary?.mentions_provably_fair ? "yes" : "no",
+              d.links.slice(0, 4).map((l: Json) => l.text || l.url).join(" · ") || "—",
+            ])} />
+        )}
+      </Async>
     </Card>
   );
 }

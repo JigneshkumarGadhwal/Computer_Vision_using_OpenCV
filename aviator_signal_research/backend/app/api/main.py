@@ -223,7 +223,7 @@ class RoundIn(BaseModel):
     timestamp: datetime | None = None
     session_id: str | None = None
     verified: bool = False
-    source_kind: str = Field("manual", pattern="^(manual|live_feed|authorized_api)$")
+    source_kind: str = Field("manual", pattern="^(manual|live_feed|authorized_api|public_observation)$")
 
 
 @app.post("/api/live/{source_name}/rounds")
@@ -534,9 +534,44 @@ def integrity(session: Session = Depends(get_session)):
             "cutoff_not_before_target": bad_cutoff, "passed": bad_order == 0 and bad_cutoff == 0}
 
 
+class ReferenceRequest(BaseModel):
+    urls: list[str] = Field(..., min_length=1, max_length=10)
+    render: str = Field("auto", pattern="^(auto|never|always)$")
+    follow_doc_links: bool = True
+    max_pages: int = Field(6, ge=1, le=20)
+
+
+@app.post("/api/reference/collect")
+def reference_collect(req: ReferenceRequest):
+    """Collect official documentation pages (robots.txt obeyed, rate-limited, no anti-bot bypass)."""
+    from ..collectors.policy import AccessPolicy
+    from ..collectors.reference import collect_many
+
+    bad = [u for u in req.urls if not u.startswith(("http://", "https://"))]
+    if bad:
+        raise HTTPException(422, f"invalid URLs: {bad}")
+    out = collect_many(req.urls, AccessPolicy(), render=req.render, follow_doc_links=req.follow_doc_links,
+                       max_pages=req.max_pages)
+    with session_scope() as s:
+        from ..models import log_event
+
+        log_event(s, "warning" if out["errors"] else "info", "reference",
+                  f"Reference collection: {len(out['documents'])} document(s), {len(out['errors'])} error(s)",
+                  urls=req.urls, errors=out["errors"])
+    return out
+
+
+@app.get("/api/reference")
+def reference_list():
+    from ..collectors.reference import list_reference
+
+    return list_reference()
+
+
 @app.get("/api/docs/{name}", response_class=PlainTextResponse)
 def project_doc(name: str):
     allowed = {"methodology": "docs/METHODOLOGY.md", "limitations": "docs/LIMITATIONS.md",
+               "collection": "docs/COLLECTION.md",
                "api": "docs/API.md", "troubleshooting": "docs/TROUBLESHOOTING.md", "readme": "README.md"}
     if name not in allowed:
         raise HTTPException(404, "unknown document")

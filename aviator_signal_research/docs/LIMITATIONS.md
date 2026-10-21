@@ -35,7 +35,8 @@
 | Component | Status | What is needed |
 |-----------|--------|----------------|
 | Real historical data | **missing** | An authorised export (CSV/JSON) from the operator, or records you collected where permitted |
-| Live feed | interface only (`POST /api/live/{source}/rounds`, `FeedAdapter`) | A documented, authorised API or your own permitted collector; no website connector is included |
+| Live feed | `POST /api/live/{source}/rounds`, `FeedAdapter`, and the `observe` collector for public pages | The target host must be reachable (in this cloud environment `spribe.co` is blocked by the network policy); check the site's terms; demo-page rounds are not operator rounds |
+| Official documentation | `collect-docs` collector implemented and tested on fixtures | Same network access; extracted RTP/fairness facts must be confirmed by a human |
 | Fairness verification | commitment check only | Operator's documented seed→multiplier formula, verified, then `register_derivation()` |
 | Platform payout rules | simplified (`S·(M−1)` / `−S`, optional cap/fee/tie rule) | The operator's documented settlement rules, limits and fees |
 | RTP / reference distribution | assumed 0.97 | Operator documentation or certification report |

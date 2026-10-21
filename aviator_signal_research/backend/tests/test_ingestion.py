@@ -127,6 +127,11 @@ def test_synthetic_and_real_never_mixed(session):
         add_single_round(session, "mixed", "manual", 2.0)
 
 
+def test_manual_entries_get_consecutive_sequences(session):
+    seqs = [add_single_round(session, "seq-src", "manual", 1.5 + i).sequence for i in range(4)]
+    assert seqs == [0, 1, 2, 3]  # regression: max(sequence)=0 used to be treated as "no rounds"
+
+
 def test_manual_entry_validation(session):
     r = add_single_round(session, "man", "manual", "2.5x", round_id="r1")
     assert r.sequence == 0 and r.multiplier == 2.5

@@ -10,8 +10,9 @@ statistical and machine-learning models, stores every prediction immutably *befo
 calibrated probabilities into transparent research signals (`INSUFFICIENT EVIDENCE` / `NO DEMONSTRATED EDGE` /
 `RESEARCH SIGNAL`), and backtests hypothetical cash-out policies with an independent audit.
 
-It does **not** place bets, connect to gambling accounts, scrape websites, or attempt to obtain seeds or server
-state. It ships **no real Aviator data**; the bundled demo data are synthetic and labelled as such everywhere.
+It does **not** place bets, connect to gambling accounts, bypass anti-bot protection, or attempt to obtain seeds or
+server state. Public documentation and publicly visible round results can be collected politely (robots.txt,
+rate limits, honest User-Agent). It ships **no real Aviator data**; the bundled demo data are synthetic and labelled as such everywhere.
 
 ---
 
@@ -52,7 +53,13 @@ python scripts/research_cli.py import my_export.csv --source operator-x --kind h
 python scripts/research_cli.py evaluate --source operator-x
 python scripts/research_cli.py backtest --run 1 --threshold 2
 python scripts/research_cli.py demo-report          # full synthetic end-to-end run -> reports/
+python scripts/research_cli.py collect-docs https://spribe.co/games/aviator   # official rules/RTP/fairness text
+python scripts/research_cli.py observe <public game URL> --source my-observed --minutes 60
 ```
+
+Collection obeys robots.txt, rate-limits, and stops on CAPTCHA/anti-bot pages. See
+**[docs/COLLECTION.md](docs/COLLECTION.md)** for the tool evaluation (Scrapling parser + httpx + official
+Playwright) and what was verified.
 
 ### Tests
 

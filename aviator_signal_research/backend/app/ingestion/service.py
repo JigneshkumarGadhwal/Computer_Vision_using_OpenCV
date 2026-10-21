@@ -226,15 +226,18 @@ def add_single_round(
     verified: bool = False,
 ) -> Round:
     """Manual or live-feed entry of one observed (already finished) round."""
-    if source_kind not in ("manual", "live_feed", "authorized_api", "synthetic"):
-        raise ImportError_("Single-round entry is only for manual, live_feed, authorized_api or synthetic sources.")
+    if source_kind not in ("manual", "live_feed", "authorized_api", "public_observation", "synthetic"):
+        raise ImportError_(
+            "Single-round entry is only for manual, live_feed, authorized_api, public_observation or synthetic sources."
+        )
     m = parse_multiplier(multiplier)
     if np.isnan(m) or m < 1.0:
         raise ImportError_(f"Invalid multiplier {multiplier!r}: must be a number >= 1.0.")
     if m > get_settings().max_valid_multiplier:
         raise ImportError_("Multiplier above configured maximum; rejected.")
     src = get_or_create_source(session, source_name, source_kind)
-    next_seq = (session.scalar(select(func.max(Round.sequence)).where(Round.source_id == src.id)) or -1) + 1
+    last_seq = session.scalar(select(func.max(Round.sequence)).where(Round.source_id == src.id))
+    next_seq = 0 if last_seq is None else last_seq + 1  # NB: last_seq may be 0
     rid = round_id or f"{source_kind}-{next_seq}"
     existing = session.scalar(select(Round).where(Round.source_id == src.id, Round.round_id == rid))
     if existing is not None:

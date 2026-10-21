@@ -34,7 +34,7 @@ epoch s/ms), `timezone`, `session_id`, `collected_at`, `verified`, `server_seed_
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/live/{source_name}/rounds` | `{"multiplier": "2.31x", "round_id"?, "timestamp"?, "session_id"?, "verified"?, "source_kind": "manual"\|"live_feed"\|"authorized_api"}` — a **completed** round. Resolves pending live predictions |
+| POST | `/api/live/{source_name}/rounds` | `{"multiplier": "2.31x", "round_id"?, "timestamp"?, "session_id"?, "verified"?, "source_kind": "manual"\|"live_feed"\|"authorized_api"\|"public_observation"}` — a **completed** round. Resolves pending live predictions |
 | GET | `/api/live/status` | Feed status for all sources (`data_mode`: live / delayed / historical / manual / synthetic; `stale`) |
 | GET | `/api/live/status/{id}` | Feed status for one source |
 
@@ -65,6 +65,13 @@ epoch s/ms), `timezone`, `session_id`, `collected_at`, `verified`, `server_seed_
 | GET | `/api/backtests?run_id` | Backtests (without bet logs) |
 | GET | `/api/backtests/{id}?include_bets=false` | One backtest incl. audit |
 | GET | `/api/backtests/{id}/bets.csv` | Every simulated bet |
+
+## Reference documentation
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/reference/collect` | `{"urls": [...], "render": "auto"\|"never"\|"always", "follow_doc_links": true, "max_pages": 6}` → `{documents, errors, context}`; errors carry `reason` (`network_blocked`, `robots_disallowed`, `access_challenge`, `fetch_failed`) |
+| GET | `/api/reference` | Stored documentation records (summary facts, links, compact context) |
 
 ## System
 

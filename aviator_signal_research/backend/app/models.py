@@ -35,6 +35,7 @@ SOURCE_KINDS = (
     "authorized_api",
     "manual",
     "live_feed",
+    "public_observation",  # rounds observed on a publicly accessible page (e.g. a game demo)
     "synthetic",
 )
 

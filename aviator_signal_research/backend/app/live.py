@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from .config import get_settings
 from .models import DataSource, Round, SystemEvent, log_event
 
-LIVE_KINDS = ("live_feed", "authorized_api")
+LIVE_KINDS = ("live_feed", "authorized_api", "public_observation")
 DELAY_THRESHOLD_SECONDS = 60
 
 

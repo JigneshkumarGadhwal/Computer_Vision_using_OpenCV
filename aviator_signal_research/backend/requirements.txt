@@ -11,5 +11,9 @@ scikit-learn==1.9.1
 statsmodels==0.15.0
 lightgbm==4.7.0
 joblib==1.6.0
+# Collectors (docs/COLLECTION.md): Scrapling core parser + official Playwright (no stealth extras)
+httpx==0.28.1
+scrapling==0.5
+playwright==1.56.0
 # Optional: PostgreSQL driver
 # psycopg[binary]==3.2.3

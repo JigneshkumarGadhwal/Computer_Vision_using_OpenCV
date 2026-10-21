@@ -135,6 +135,17 @@ def test_history_extractor_ignores_other_lists_and_handles_split_text():
     assert HistoryExtractor().extract("<p>2.31x</p><p>no list</p>").values == []
 
 
+def test_multiplier_text_with_thousands_separators():
+    from app.collectors.observer import parse_multiplier_text
+
+    # observed live: a 6516.99x round (2026-10-21) was missed because of the separator
+    assert parse_multiplier_text("6,516.99x") == 6516.99
+    assert parse_multiplier_text("12,345x") == 12345.0
+    assert parse_multiplier_text("6\u202f516.99x") == 6516.99
+    assert parse_multiplier_text("2,31x") == 2.31  # decimal comma still supported
+    assert parse_multiplier_text("1.00x") == 1.0 and parse_multiplier_text("abc") is None
+
+
 def test_history_extractor_relocates_when_markup_changes():
     h = HistoryExtractor()
     h.extract('<div id="a"><p>1.5x</p><p>2.5x</p><p>3.5x</p></div>')

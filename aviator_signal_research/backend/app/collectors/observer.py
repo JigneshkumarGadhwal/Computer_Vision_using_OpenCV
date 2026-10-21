@@ -44,8 +44,14 @@ from .policy import AccessChallenge, AccessPolicy, CollectorError, FetchFailed, 
 MULT_RE = re.compile(r"^\s*(\d{1,7}(?:[.,]\d{1,2})?)\s*[x×]\s*$", re.I)
 
 
+_THOUSANDS_RE = re.compile(r"^\s*\d{1,3}(?:[,\u202f\u00a0 ]\d{3})+(?:\.\d{1,2})?\s*[x×]\s*$", re.I)
+
+
 def parse_multiplier_text(t: str) -> float | None:
-    m = MULT_RE.match(t or "")
+    t = t or ""
+    if _THOUSANDS_RE.match(t):  # "6,516.99x" / "6 516.99x": drop the thousands separators
+        t = re.sub(r"[,\u202f\u00a0 ](?=\d{3}(?!\d))", "", t.strip())
+    m = MULT_RE.match(t)
     if not m:
         return None
     v = float(m.group(1).replace(",", "."))

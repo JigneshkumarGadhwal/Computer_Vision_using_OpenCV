@@ -80,6 +80,11 @@ network refusal, repeated page failures, or no new round for 5 minutes.
 * The **demo** server may differ from real-money operators (different RTP configuration, different traffic).
   Keep it as its own source; never mix it with an operator export.
 * Official round ids are **not consecutive** (the counter is shared), so id gaps are not missing rounds.
+* When the game's WebSocket reconnects, a round can be missed on that channel (observed: 2 of 304 rounds in one
+  110-minute chunk, both still seen on the history bar and counted as `dom_only`). In WebSocket mode such rounds
+  are not ingested, so strict round-to-round adjacency is broken at those points; the counts are in each run's summary.
+* Multipliers ≥ 1,000x are displayed with thousands separators (`6,516.99x`); handled since 2026-10-21 21:00 UTC
+  (one earlier round of 6,516.99x was recorded from the WebSocket but could not be fairness-verified).
 * Pre-round server-seed hashes ("next server seed SHA256") are not yet recorded, so commitment checks are not run.
 * Terms of use: none were found on spribe.co beyond privacy/cookie policies; check before long observations.
 

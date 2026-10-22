@@ -85,6 +85,12 @@ network refusal, repeated page failures, or no new round for 5 minutes.
   are not ingested, so strict round-to-round adjacency is broken at those points; the counts are in each run's summary.
 * Multipliers ≥ 1,000x are displayed with thousands separators (`6,516.99x`); handled since 2026-10-21 21:00 UTC
   (one earlier round of 6,516.99x was recorded from the WebSocket but could not be fairness-verified).
+* **The full run (21–22 Oct 2026)** collected 3,000 rounds (2,933 fairness-verified, 0 mismatches) in chunks of
+  ≤ 110 minutes. Gaps longer than 3 minutes: 18:01–18:20, 18:38–18:43 and 18:47–18:56 UTC (development and restarts
+  between chunks), 19:01–19:08 (container restart), 05:54–06:01 (demo-server outage: the game's WebSocket kept
+  reconnecting), 09:02–10:40 (container restart, ≈ 268 rounds missed). Background jobs do not survive a restart of
+  the cloud container, so a scheduled check-in restarted collection. On your own PC, disable sleep instead.
+  Details: `reports/FINAL_REPORT.md`, `reports/real_data_summary.json` (`collection_gaps`).
 * Pre-round server-seed hashes ("next server seed SHA256") are not yet recorded, so commitment checks are not run.
 * Terms of use: none were found on spribe.co beyond privacy/cookie policies; check before long observations.
 

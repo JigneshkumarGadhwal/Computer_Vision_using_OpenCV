@@ -12,7 +12,8 @@ calibrated probabilities into transparent research signals (`INSUFFICIENT EVIDEN
 
 It does **not** place bets, connect to gambling accounts, bypass anti-bot protection, or attempt to obtain seeds or
 server state. Public documentation and publicly visible round results can be collected politely (robots.txt,
-rate limits, honest User-Agent). It ships **no real Aviator data**; the bundled demo data are synthetic and labelled as such everywhere.
+rate limits, honest User-Agent). It ships **3,000 real rounds observed on Spribe's public Aviator demo**
+(`data/observed/`, 97.8% fairness-verified) plus synthetic demo data that is labelled as such everywhere.
 
 ---
 
@@ -112,7 +113,7 @@ aviator_signal_research/
 | Look-ahead audit on every run; failure forces INSUFFICIENT EVIDENCE | A leakage bug otherwise looks like a breakthrough (see `test_leakage_bug_cannot_produce_a_signal`) |
 | Calibration gate = Hosmer–Lemeshow + calibration gap, ECE reported only | Fixed ECE cut-offs reject well-calibrated models on ~1k-round samples |
 | SQLite by default, PostgreSQL via `AVR_DATABASE_URL` | Zero-setup prototype; immutability triggers exist for both |
-| No pull connector to any site | No documented, authorised Aviator API is known; data arrive by upload or authorised push |
+| Collectors read only what any visitor sees (robots.txt, rate limit, stop on CAPTCHA); no account, no betting | No documented, authorised Aviator data API is known; public demo observation + per-round provably-fair check is the legitimate route |
 
 See **[docs/METHODOLOGY.md](docs/METHODOLOGY.md)** for the full protocol and
 **[docs/LIMITATIONS.md](docs/LIMITATIONS.md)** for limitations and the list of components that need real data or
@@ -120,10 +121,14 @@ external integration. API: **[docs/API.md](docs/API.md)**. Problems: **[docs/TRO
 
 ## Results so far
 
-Only synthetic data have been evaluated (no real data were available). See `reports/` and
-**[reports/FINAL_REPORT.md](reports/FINAL_REPORT.md)**. In short: on independent synthetic rounds the system
-reports **NO DEMONSTRATED EDGE**; on synthetic data with a deliberately planted regime dependence it detects the
-signal. That validates the *framework*. It says nothing about real Aviator rounds.
+**Real data (3,000 Spribe demo rounds, 21–22 Oct 2026): NO DEMONSTRATED EDGE at 1.5x, 2x, 3x and 5x.** On 900
+unseen rounds the best model matched the frequency baseline (Brier skill at 2x +0.00015, 95% CI −0.0015 to
++0.0018; Holm DM p = 0.53). Its yes/no accuracy equalled "always predict the more likely side". All 2,933 rounds
+with revealed seeds were re-derived exactly from the provably-fair hash (0 mismatches). The frequencies match
+`P(X ≥ m) = 0.97/m`, and no dependence test is significant. Past rounds do not predict the next one.
+
+On synthetic data the same pipeline detects a deliberately planted dependence, which shows that the negative result
+is not a blind spot of the framework. Full details: **[reports/FINAL_REPORT.md](reports/FINAL_REPORT.md)**.
 
 ## Screenshots (synthetic regime demo)
 

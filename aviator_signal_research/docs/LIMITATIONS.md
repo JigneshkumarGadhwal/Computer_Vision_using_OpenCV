@@ -2,13 +2,15 @@
 
 ## What this project cannot know
 
-* **No real Aviator data ships with the project.** All numbers in the bundled report come from clearly labelled
-  synthetic data. Whether a real operator's rounds contain predictive information is unknown until you import an
-  authorised export and run the evaluation.
+* **Real data are demo-server observations, not an operator export.** 3,000 rounds were observed on Spribe's
+  public demo (`data/observed/spribe_demo_rounds.csv`, source `spribe-demo-observed`) with collection gaps
+  (container restarts, one demo-server outage; see `docs/COLLECTION.md`). They answer the research question for
+  the demo server only; a real-money operator may configure a different RTP.
 * **The generation mechanism is verified for the demo server only.** The 97% RTP is stated on spribe.co, and the
   seed→multiplier formula was reconstructed and reproduced exactly on 16 published demo rounds (METHODOLOGY §3).
   Real-money operators may configure a different RTP, and pre-round server-seed commitments are not yet recorded,
-  so "the server seed was fixed before the round" is documented but not independently checked here. Other
+  so "the server seed was fixed before the round" is documented but not independently checked here.
+  Note the instant-crash share: results are floored to 2 decimals, so P(1.00x) = 1 − 0.97/1.01 ≈ 3.96%, not 3%. Other
   "Aviator"-branded games may use different software.
 * **A statistical anomaly is not an edge.** Dependence tests in the History page can be significant without any
   model improving out-of-sample probabilities enough to matter, and a better Brier score need not survive the
@@ -36,7 +38,7 @@
 
 | Component | Status | What is needed |
 |-----------|--------|----------------|
-| Real historical data | **missing** | An authorised export (CSV/JSON) from the operator, or records you collected where permitted |
+| Real historical data | **3,000 observed demo rounds** (≥96% fairness-verified) | An authorised operator export of ≥10,000 consecutive rounds for a real-money conclusion |
 | Live feed | `POST /api/live/{source}/rounds`, `FeedAdapter`, and the `observe` collector for public pages | The demo host `demo.spribe.io` (domain `spribe.io`) must be allowed in the environment's network policy; check the site's terms; demo-page rounds are not operator rounds |
 | Official documentation | `collect-docs` collector implemented and tested on fixtures | Same network access; extracted RTP/fairness facts must be confirmed by a human |
 | Fairness verification | `spribe_aviator_v1` derivation verified (16/16 demo rounds); `observe --verify-fairness` re-derives every observed round | Record the pre-round "next server seed SHA256" to check commitments; verify on a real-money operator |

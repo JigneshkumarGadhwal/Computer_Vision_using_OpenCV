@@ -187,6 +187,12 @@ p-value was 1.0 for ridge, gradient boosting and the mean. Even where threshold 
 
 ## Tests actually executed (2026-10-21)
 
+**Re-run on the final code, 2026-10-22 14:10 UTC:** `python -m pytest` → **82 passed** (4 min 5 s). This adds collector,
+SmartFoxServer decoding, Spribe fairness derivation (16 real published rounds) and thousands-separator tests to the
+suite below. Frontend code is unchanged since its last run (`npm test` → 9 passed).
+
+Original run:
+
 * Backend: `python -m pytest` → **56 passed** (17 min 55 s on a shared 4-core container). Covers ingestion and
   validation, feature causality, a planted-leak audit, metrics against sklearn/statsmodels, walk-forward vault and
   ledger, no false skill on independent data, planted-signal detection on 4 seeds, a leakage bug that cannot produce

@@ -54,7 +54,8 @@ result = max(1.00, floor(97 · 2^52 / (2^52 − h)) / 100)                      
 round, then `u = h/2^52 ~ U(0,1)` independently per round and
 
 ```
-P(X ≥ m) = P(97/(1−u) ≥ 100·m) = 0.97 / m      for m ≥ 1.00  (3% of rounds are 1.00x)
+P(X ≥ m) = P(97/(1−u) ≥ 100·m) = 0.97 / m      for m ≥ 1.01
+P(X = 1.00) = 1 − 0.97/1.01 ≈ 3.96%   (results are floored to 2 decimals, so everything below 1.01x shows as 1.00x)
 ```
 
 which is exactly the reference distribution used throughout. Past rounds carry no information about the next one;

@@ -323,7 +323,7 @@ def test_spribe_derivation_reproduces_real_published_rounds():
     r = data[0]
     assert not verify_spribe_record(r["serverSeed"], r["clientSeeds"], r["result"] + 0.01, r["sha512"])["verified"]
     assert not verify_spribe_record(r["serverSeed"] + "x", r["clientSeeds"], r["result"], r["sha512"])["verified"]
-    # implied distribution: instant crash iff h < 3% of 2**52 -> P(X >= m) = 0.97 / m
+    # implied distribution: P(X >= m) = 0.97 / m for m >= 1.01; 1.00x iff 97/(1-u) < 101, i.e. ~3.96% of rounds
     assert spribe_aviator_result("0" * 13) == 1.0 and spribe_aviator_result("0" + "8" * 12) == 1.0
 
 

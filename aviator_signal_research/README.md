@@ -18,6 +18,8 @@ rate limits, honest User-Agent). It ships **no real Aviator data**; the bundled 
 
 ## Quick start (local)
 
+**New to this? Follow the step-by-step guide for your own PC: [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md).**
+
 Requirements: Python 3.11+ (tested 3.13), Node 18+ (tested 22).
 
 ```bash
